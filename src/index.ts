@@ -28,12 +28,10 @@ const entities: Record<string, Entity> = {
   [enemy.id]: enemy
 };
 
-const world = new World(canvas, entities);
-
-const systems = [input, collision, render];
+const world = new World(canvas, entities, [input, collision, render]);
 
 function gameLoop() {
-  systems.forEach(system => system(world));
+  world.tick();
 
   requestAnimationFrame(gameLoop);
 }

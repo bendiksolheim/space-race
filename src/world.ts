@@ -1,4 +1,5 @@
 import Entity from "./entity";
+import System from "./system";
 import { Component } from "./component";
 
 export default class World {
@@ -6,14 +7,20 @@ export default class World {
   context: CanvasRenderingContext2D;
   entities: Record<string, Entity>;
   mouse: { x: number; y: number };
+  systems: System[];
 
-  constructor(canvas: HTMLCanvasElement, entities: Record<string, Entity>) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    entities: Record<string, Entity>,
+    systems: System[]
+  ) {
     canvas.style.cursor = "none";
     canvas.style.backgroundColor = "#aaa";
     this.canvas = canvas;
     this.context = canvas.getContext("2d")!;
     this.entities = entities;
     this.mouse = { x: -100, y: -100 };
+    this.systems = systems;
 
     const canvasRect = canvas.getBoundingClientRect();
     this.canvas.addEventListener("mousemove", ev => {
@@ -36,5 +43,9 @@ export default class World {
 
   removeEntity(id: string) {
     delete this.entities[id];
+  }
+
+  tick() {
+    this.systems.forEach(system => system(this));
   }
 }
