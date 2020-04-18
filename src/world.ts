@@ -7,10 +7,10 @@ export default class World {
   entities: Record<string, Entity>;
   mouse: { x: number; y: number };
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, entities: Record<string, Entity>) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d")!;
-    this.entities = {};
+    this.entities = entities;
     this.mouse = { x: -100, y: -100 };
 
     const canvasRect = canvas.getBoundingClientRect();
@@ -25,10 +25,14 @@ export default class World {
   }
 
   getEntities<C extends Component>(
-    args: (new (...args: any) => C)[]
+    ...components: (new (...args: any) => C)[]
   ): Entity[] {
     return Object.values(this.entities).filter(entity =>
-      args.every(component => entity.has(component))
+      components.every(component => entity.has(component))
     );
+  }
+
+  removeEntity(id: string) {
+    delete this.entities[id];
   }
 }

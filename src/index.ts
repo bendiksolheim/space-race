@@ -2,19 +2,17 @@ import Entity from "./entity";
 import Health from "./components/health";
 import Position from "./components/position";
 import World from "./world";
-import Render from "./systems/render";
-import Input from "./systems/input";
+import render from "./systems/render";
+import input from "./systems/input";
+import collision from "./systems/collision";
 import Appearance from "./components/appearance";
 import Controlled from "./components/controlled";
 import Collidable from "./components/collidable";
-import Collision from "./systems/collision";
 
 const canvas = document.createElement("canvas") as HTMLCanvasElement;
 canvas.width = 800;
 canvas.height = 600;
 document.body.appendChild(canvas);
-
-const world = new World(canvas);
 
 const player = new Entity();
 player.add(Health, new Health(20));
@@ -27,14 +25,17 @@ enemy.add(Position, new Position(200, 200));
 enemy.add(Appearance, new Appearance({ r: 250, g: 0, b: 0 }, 10));
 enemy.add(Collidable, new Collidable());
 
-const entities: Entity[] = [player, enemy];
+const entities: Record<string, Entity> = {
+  [player.id]: player,
+  [enemy.id]: enemy
+};
 
-const systems = [new Input(), new Collision(), new Render()];
+const world = new World(canvas, entities);
 
-systems.forEach(system => system.addEntities(entities));
+const systems = [input, collision, render];
 
 function gameLoop() {
-  systems.forEach(system => system.execute(world));
+  systems.forEach(system => system(world));
 
   requestAnimationFrame(gameLoop);
 }

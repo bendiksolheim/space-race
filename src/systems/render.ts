@@ -14,36 +14,27 @@ function clear(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
   context.restore();
 }
 
-export default class Render implements System {
-  entities: Entity[] = [];
+const render: System = (world: World) => {
+  const { canvas, context } = world;
+  const entities = world.getEntities<Component>(Appearance, Position);
+  clear(canvas, context);
 
-  addEntities(entities: Entity[]): void {
-    entities.forEach(entity => {
-      if (entity.has(Appearance) && entity.has(Position)) {
-        this.entities.push(entity);
-      }
-    });
-  }
+  //const entities = world.getEntities<Component>([Position, Appearance]);
 
-  execute(world: World): void {
-    const { canvas, context } = world;
-    clear(canvas, context);
+  entities.forEach(entity => {
+    const { color, size } = entity.get(Appearance);
+    const { x, y } = entity.get(Position);
 
-    //const entities = world.getEntities<Component>([Position, Appearance]);
+    context.fillStyle = rgb(color);
+    context.strokeStyle = "rgba(0,0,0,1)";
 
-    this.entities.forEach(entity => {
-      const { color, size } = entity.get(Appearance);
-      const { x, y } = entity.get(Position);
-
-      context.fillStyle = rgb(color);
-      context.fillStyle = "rgba(0,0,0,1)";
-
-      context.fillRect(x - size, y - size, size * 2, size * 2);
-      context.strokeRect(x - size, y - size, size * 2, size * 2);
-    });
-  }
-}
+    context.fillRect(x - size, y - size, size * 2, size * 2);
+    context.strokeRect(x - size, y - size, size * 2, size * 2);
+  });
+};
 
 function rgb(color: Color) {
   return `rgb(${color.r},${color.g},${color.b})`;
 }
+
+export default render;

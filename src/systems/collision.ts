@@ -5,62 +5,40 @@ import Appearance from "../components/appearance";
 import Position from "../components/position";
 import Controlled from "../components/controlled";
 import Collidable from "../components/collidable";
+import { Component } from "../component";
 
-function clear(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-  context.save();
+const collision: System = (world: World) => {
+  const players = world.getEntities<Component>(
+    Position,
+    Appearance,
+    Controlled
+  );
+  if (players.length === 0) {
+    return;
+  }
+  const player = players[0];
+  const enemies = world.getEntities<Component>(
+    Position,
+    Appearance,
+    Collidable
+  );
+  const playerPosition = player.get(Position);
+  const playerSize = player.get(Appearance).size;
+  enemies.forEach(entity => {
+    const entityPosition = entity.get(Position);
+    const entitySize = entity.get(Appearance).size;
+    const r1 = rect(playerPosition.x, playerPosition.y, playerSize);
+    const r2 = rect(entityPosition.x, entityPosition.y, entitySize);
 
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  context.clearRect(0, 0, canvas.width, canvas.height);
-
-  context.restore();
-}
-
-export default class Collision implements System {
-  player?: Entity;
-  entities: Entity[] = [];
-
-  addEntities(entities: Entity[]): void {
-    entities.forEach(entity => {
-      if (
-        entity.has(Position) &&
-        entity.has(Appearance) &&
-        entity.has(Controlled)
-      ) {
-        this.player = entity;
-      } else if (
-        entity.has(Position) &&
-        entity.has(Appearance) &&
-        entity.has(Collidable)
-      ) {
-        this.entities.push(entity);
+    if (intersects(r1, r2)) {
+      if (playerSize > entitySize) {
+        world.removeEntity(entity.id);
       }
-    });
-  }
-
-  execute(world: World): void {
-    if (this.player !== undefined) {
-      const playerPosition = this.player.get(Position);
-      const playerSize = this.player.get(Appearance).size;
-
-      this.entities = this.entities.filter(entity => {
-        const entityPosition = entity.get(Position);
-        const entitySize = entity.get(Appearance).size;
-        const r1 = rect(playerPosition.x, playerPosition.y, playerSize);
-        const r2 = rect(entityPosition.x, entityPosition.y, entitySize);
-
-        if (intersects(r1, r2)) {
-          if (playerSize < entitySize) {
-            return false;
-          } else {
-            this.player = undefined;
-          }
-        }
-
-        return true;
-      });
     }
-  }
-}
+
+    return true;
+  });
+};
 
 function intersects(a: Rect, b: Rect): boolean {
   return a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
@@ -75,3 +53,5 @@ function rect(x: number, y: number, size: number): Rect {
     y2: y + size * 2
   };
 }
+
+export default collision;
