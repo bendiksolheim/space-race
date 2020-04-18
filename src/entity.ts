@@ -9,16 +9,16 @@ export default class Entity {
     this.components = new Map();
   }
 
-  add<C extends Component>(component: C) {
-    const i = component.constructor as new (...args: any) => C;
+  add(component: Component) {
+    const i = component.constructor as new (...args: any) => Component;
     this.components.set(i, component);
   }
 
-  remove<C extends Component>(component: new (...args: any) => C) {
+  remove(component: new (...args: any) => Component) {
     this.components.delete(component);
   }
 
-  has<C extends Component>(component: new (...args: any) => C): boolean {
+  has(component: new (...args: any) => Component): boolean {
     return this.components.has(component);
   }
 
