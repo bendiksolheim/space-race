@@ -43,12 +43,12 @@ const collision: System = (world: World) => {
 };
 
 function randomEnemy(world: World): Entity {
-  const x = Math.floor(Math.random() * world.canvas.width) + 1;
-  const y = Math.floor(Math.random() * world.canvas.height) + 1;
+  const x = Math.floor(Math.random() * (world.canvas.width - 15)) + 1;
+  const y = Math.floor(Math.random() * (world.canvas.height - 15)) + 1;
   const entity = new Entity();
-  entity.add(Position, new Position(x, y));
-  entity.add(Appearance, new Appearance({ r: 250, g: 0, b: 0 }, 10));
-  entity.add(Collidable, new Collidable());
+  entity.add(new Position(x, y));
+  entity.add(new Appearance({ r: 250, g: 0, b: 0 }, 15));
+  entity.add(new Collidable());
 
   return entity;
 }

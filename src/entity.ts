@@ -9,8 +9,9 @@ export default class Entity {
     this.components = new Map();
   }
 
-  add<C extends Component>(key: new (...args: any) => C, component: C) {
-    this.components.set(key, component);
+  add<C extends Component>(component: C) {
+    const i = component.constructor as new (...args: any) => C;
+    this.components.set(i, component);
   }
 
   remove<C extends Component>(component: new (...args: any) => C) {
