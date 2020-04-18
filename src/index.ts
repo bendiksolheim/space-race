@@ -1,5 +1,4 @@
 import Entity from "./entity";
-import Health from "./components/health";
 import Position from "./components/position";
 import World from "./world";
 import render from "./systems/render";
@@ -15,14 +14,13 @@ canvas.height = 600;
 document.body.appendChild(canvas);
 
 const player = new Entity();
-player.add(Health, new Health(20));
 player.add(Position, new Position(100, 100));
-player.add(Appearance, new Appearance({ r: 100, g: 100, b: 100 }, 20));
+player.add(Appearance, new Appearance({ r: 100, g: 100, b: 100 }, 30));
 player.add(Controlled, new Controlled());
 
 const enemy = new Entity();
 enemy.add(Position, new Position(200, 200));
-enemy.add(Appearance, new Appearance({ r: 250, g: 0, b: 0 }, 10));
+enemy.add(Appearance, new Appearance({ r: 250, g: 0, b: 0 }, 15));
 enemy.add(Collidable, new Collidable());
 
 const entities: Record<string, Entity> = {

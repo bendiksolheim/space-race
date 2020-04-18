@@ -8,6 +8,8 @@ export default class World {
   mouse: { x: number; y: number };
 
   constructor(canvas: HTMLCanvasElement, entities: Record<string, Entity>) {
+    canvas.style.cursor = "none";
+    canvas.style.backgroundColor = "#aaa";
     this.canvas = canvas;
     this.context = canvas.getContext("2d")!;
     this.entities = entities;

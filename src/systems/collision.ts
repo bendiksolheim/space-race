@@ -24,6 +24,7 @@ const collision: System = (world: World) => {
   );
   const playerPosition = player.get(Position);
   const playerSize = player.get(Appearance).size;
+
   enemies.forEach(entity => {
     const entityPosition = entity.get(Position);
     const entitySize = entity.get(Appearance).size;
@@ -33,12 +34,24 @@ const collision: System = (world: World) => {
     if (intersects(r1, r2)) {
       if (playerSize > entitySize) {
         world.removeEntity(entity.id);
+        world.add(randomEnemy(world));
       }
     }
 
     return true;
   });
 };
+
+function randomEnemy(world: World): Entity {
+  const x = Math.floor(Math.random() * world.canvas.width) + 1;
+  const y = Math.floor(Math.random() * world.canvas.height) + 1;
+  const entity = new Entity();
+  entity.add(Position, new Position(x, y));
+  entity.add(Appearance, new Appearance({ r: 250, g: 0, b: 0 }, 10));
+  entity.add(Collidable, new Collidable());
+
+  return entity;
+}
 
 function intersects(a: Rect, b: Rect): boolean {
   return a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
@@ -47,10 +60,10 @@ function intersects(a: Rect, b: Rect): boolean {
 type Rect = { x1: number; y1: number; x2: number; y2: number };
 function rect(x: number, y: number, size: number): Rect {
   return {
-    x1: x - size,
-    y1: y - size,
-    x2: x + size * 2,
-    y2: y + size * 2
+    x1: x,
+    y1: y,
+    x2: x + size,
+    y2: y + size
   };
 }
 

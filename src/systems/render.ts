@@ -19,8 +19,6 @@ const render: System = (world: World) => {
   const entities = world.getEntities<Component>(Appearance, Position);
   clear(canvas, context);
 
-  //const entities = world.getEntities<Component>([Position, Appearance]);
-
   entities.forEach(entity => {
     const { color, size } = entity.get(Appearance);
     const { x, y } = entity.get(Position);
@@ -28,8 +26,8 @@ const render: System = (world: World) => {
     context.fillStyle = rgb(color);
     context.strokeStyle = "rgba(0,0,0,1)";
 
-    context.fillRect(x - size, y - size, size * 2, size * 2);
-    context.strokeRect(x - size, y - size, size * 2, size * 2);
+    context.fillRect(x, y, size, size);
+    context.strokeRect(x, y, size, size);
   });
 };
 
