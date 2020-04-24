@@ -32,10 +32,8 @@ const collision: System = (world: World) => {
     const r2 = rect(entityPosition.x, entityPosition.y, entitySize);
 
     if (intersects(r1, r2)) {
-      if (playerSize > entitySize) {
-        world.removeEntity(entity.id);
-        world.add(randomEnemy(world));
-      }
+      world.removeEntity(entity.id);
+      world.add(randomEnemy(world));
     }
 
     return true;
