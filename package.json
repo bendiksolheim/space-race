@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "watch": "webpack-dev-server --no-inline"
+    "watch": "webpack-dev-server --no-inline",
+    "start": "npm run watch"
   },
   "keywords": [],
   "author": "",
