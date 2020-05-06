@@ -1,5 +1,4 @@
 import System from "../system";
-import Entity from "../entity";
 import World from "../world";
 import Appearance, { Color } from "../components/appearance";
 import Position from "../components/position";
