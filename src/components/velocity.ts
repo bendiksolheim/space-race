@@ -1,7 +1,7 @@
 import { Component } from "../ecs";
 
-class Position implements Component {
-  name = "position";
+class Velocity implements Component {
+  name = "velocity";
   x: number;
   y: number;
 
@@ -11,4 +11,4 @@ class Position implements Component {
   }
 }
 
-export default Position;
+export default Velocity;

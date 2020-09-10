@@ -1,4 +1,4 @@
-import { Component } from "../component";
+import { Component } from "../ecs";
 
 export type Color = {
   r: number;
@@ -6,14 +6,27 @@ export type Color = {
   b: number;
 };
 
+export interface Square {
+  kind: "square";
+  width: number;
+  height: number;
+}
+
+export interface Circle {
+  kind: "circle";
+  radius: number;
+}
+
+export type Shape = Circle | Square;
+
 class Appearance implements Component {
   name = "appearance";
   color: Color;
-  size: number;
+  shape: Shape;
 
-  constructor(color: Color, size: number) {
+  constructor(color: Color, shape: Shape) {
     this.color = color;
-    this.size = size;
+    this.shape = shape;
   }
 }
 

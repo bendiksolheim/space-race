@@ -1,34 +1,32 @@
-import Entity from "./entity";
-import Position from "./components/position";
-import World from "./world";
-import render from "./systems/render";
+import { mkBall, mkEntities, mkPaddle } from "./entity-creator.ts";
+import { level1 } from "./levels";
+import brickCollision from "./systems/brick-collision";
 import input from "./systems/input";
-import collision from "./systems/collision";
-import Appearance from "./components/appearance";
-import Controlled from "./components/controlled";
-import Collidable from "./components/collidable";
+import physics from "./systems/physics";
+import render from "./systems/render";
+import worldCollision from "./systems/world-collision";
+import { World } from "./ecs";
 
 const canvas = document.createElement("canvas") as HTMLCanvasElement;
-canvas.width = 800;
-canvas.height = 600;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+canvas.style.display = "block";
+canvas.style.backgroundColor = "#000";
+canvas.style.cursor = "none";
+
+document.body.style.margin = "0px";
+document.body.style.padding = "0px";
 document.body.appendChild(canvas);
 
-const player = new Entity();
-player.add(new Position(100, 100));
-player.add(new Appearance({ r: 100, g: 100, b: 100 }, 30));
-player.add(new Controlled());
+const entities = mkEntities(mkPaddle(), mkBall(), ...level1());
 
-const enemy = new Entity();
-enemy.add(new Position(200, 200));
-enemy.add(new Appearance({ r: 250, g: 0, b: 0 }, 15));
-enemy.add(new Collidable());
-
-const entities: Record<string, Entity> = {
-  [player.id]: player,
-  [enemy.id]: enemy
-};
-
-const world = new World(canvas, entities, [input, collision, render]);
+const world = new World(canvas, entities, [
+  input,
+  physics,
+  worldCollision,
+  brickCollision,
+  render,
+]);
 
 function gameLoop() {
   world.tick();

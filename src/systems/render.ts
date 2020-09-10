@@ -1,8 +1,6 @@
-import System from "../system";
-import World from "../world";
 import Appearance, { Color } from "../components/appearance";
 import Position from "../components/position";
-import { Component } from "../component";
+import { World, system, Entity } from "../ecs";
 
 function clear(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
   context.save();
@@ -13,25 +11,54 @@ function clear(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
   context.restore();
 }
 
-const render: System = (world: World) => {
-  const { canvas, context } = world;
-  const entities = world.getEntities<Component>(Appearance, Position);
-  clear(canvas, context);
+export default system(
+  [Appearance, Position],
+  (entities: Entity[], world: World) => {
+    const { canvas, context } = world;
+    clear(canvas, context);
 
-  entities.forEach(entity => {
-    const { color, size } = entity.get(Appearance);
-    const { x, y } = entity.get(Position);
+    entities.forEach((entity) => {
+      const { color, shape } = entity.get(Appearance);
+      const position = entity.get(Position);
 
-    context.fillStyle = rgb(color);
-    context.strokeStyle = "rgba(0,0,0,1)";
+      switch (shape.kind) {
+        case "square":
+          drawSquare(context, color, shape.width, shape.height, position);
+        case "circle":
+          drawCircle(context, color, shape.radius, position);
+      }
+    });
+  }
+);
 
-    context.fillRect(x, y, size, size);
-    context.strokeRect(x, y, size, size);
-  });
-};
+function drawSquare(
+  context: CanvasRenderingContext2D,
+  color: Color,
+  width: number,
+  height: number,
+  position: Position
+): void {
+  const { x, y } = position;
+  context.beginPath();
+  context.fillStyle = rgb(color);
+  context.strokeStyle = "rgba(0,0,0,1)";
+  context.fillRect(x, y, width, height);
+}
+
+function drawCircle(
+  context: CanvasRenderingContext2D,
+  color: Color,
+  radius: number,
+  position: Position
+): void {
+  const { x, y } = position;
+  context.beginPath();
+  context.fillStyle = rgb(color);
+  context.strokeStyle = "rgba(0,0,0,1)";
+  context.arc(x, y, radius, 0, 2 * Math.PI, false);
+  context.fill();
+}
 
 function rgb(color: Color) {
   return `rgb(${color.r},${color.g},${color.b})`;
 }
-
-export default render;
