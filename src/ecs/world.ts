@@ -28,7 +28,11 @@ export default class World {
   }
 
   add(entity: Entity) {
-    // this.entities[entity.id] = entity;
+    this.entities.forEach((entities, filter) => {
+      if (matches(entity, filter)) {
+        entities.set(entity.id, entity);
+      }
+    });
   }
 
   removeEntity(id: string) {
@@ -78,7 +82,9 @@ function filterEntities(
   entities: Record<string, Entity>,
   filter: ComponentList
 ): Entity[] {
-  return Object.values(entities).filter((entity) =>
-    filter.every((component) => entity.has(component))
-  );
+  return Object.values(entities).filter((entity) => matches(entity, filter));
+}
+
+function matches(entity: Entity, filter: Filter): boolean {
+  return filter.every((component) => entity.has(component));
 }
