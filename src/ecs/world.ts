@@ -3,14 +3,14 @@ import Entity from "./entity";
 import { Rect } from "../primitives/rect";
 import { System } from "./system";
 
-type ComponentList = Array<new (...args: any) => Component>;
+type Filter = Array<new (...args: any) => Component>;
 
 export default class World {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
   mouse: { x: number; y: number };
   systems: System[];
-  entities: Map<ComponentList, Map<string, Entity>>;
+  entities: Map<Filter, Map<string, Entity>>;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -80,7 +80,7 @@ export default class World {
 
 function filterEntities(
   entities: Record<string, Entity>,
-  filter: ComponentList
+  filter: Filter
 ): Entity[] {
   return Object.values(entities).filter((entity) => matches(entity, filter));
 }
