@@ -1,6 +1,6 @@
 import Component from "./component";
 import Entity from "./entity";
-import { Rect } from "../primitives/rect";
+import { Rect, rect } from "../primitives/rect";
 import { System } from "./system";
 
 type Filter = Array<new (...args: any) => Component>;
@@ -42,14 +42,7 @@ export default class World {
   }
 
   boundingBox(): Rect {
-    return {
-      x1: 0,
-      y1: 0,
-      x2: this.canvas.width,
-      y2: this.canvas.height,
-      width: this.canvas.width,
-      height: this.canvas.height,
-    };
+    return rect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   tick() {
