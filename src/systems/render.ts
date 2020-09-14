@@ -1,6 +1,9 @@
 import Appearance, { Color } from "../components/appearance";
 import Position from "../components/position";
-import { World, system, Entity } from "../ecs";
+import { World, system, Entity, Component } from "../ecs";
+import Displayable from "../components/displayable";
+import Rotation from "../components/rotation";
+import Velocity from "../components/velocity";
 
 function clear(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
   context.save();
@@ -11,25 +14,43 @@ function clear(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
   context.restore();
 }
 
-export default system(
-  [Appearance, Position],
-  (entities: Entity[], world: World) => {
-    const { canvas, context } = world;
-    clear(canvas, context);
-
-    entities.forEach((entity) => {
-      const { color, shape } = entity.get(Appearance);
-      const position = entity.get(Position);
-
-      switch (shape.kind) {
-        case "square":
-          drawSquare(context, color, shape.width, shape.height, position);
-        case "circle":
-          drawCircle(context, color, shape.radius, position);
-      }
+export default system([Displayable], (entities: Entity[], world: World) => {
+  entities.forEach((entity) => {
+    const { ref } = entity.get(Displayable);
+    ifHas(entity, Position, (position) => {
+      ref.x = position.x;
+      ref.y = position.y;
     });
+
+    ifHas(entity, Rotation, (rotation) => {
+      ref.rotation = rotation.angle;
+    });
+  });
+  // const { canvas, context } = world;
+  // clear(canvas, context);
+
+  // entities.forEach((entity) => {
+  //   const { color, shape } = entity.get(Appearance);
+  //   const position = entity.get(Position);
+
+  //   switch (shape.kind) {
+  //     case "circle":
+  //       drawCircle(context, color, shape.radius, position);
+  //     case "square":
+  //       drawSquare(context, color, shape.width, shape.height, position);
+  //   }
+  // });
+});
+
+function ifHas<C extends Component>(
+  entity: Entity,
+  component: new (...args: any) => C,
+  fn: (component: C) => void
+) {
+  if (entity.has(component)) {
+    fn(entity.get(component));
   }
-);
+}
 
 function drawSquare(
   context: CanvasRenderingContext2D,

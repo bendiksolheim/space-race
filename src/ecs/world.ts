@@ -2,6 +2,7 @@ import Component from "./component";
 import Entity from "./entity";
 import { Rect, rect } from "../primitives/rect";
 import { System } from "./system";
+import Keyboard, { Key } from "./keyboard";
 
 type Filter = Array<new (...args: any) => Component>;
 
@@ -11,6 +12,7 @@ export default class World {
   mouse: { x: number; y: number };
   systems: System[];
   entities: Map<Filter, Map<string, Entity>>;
+  keyboard: Keyboard;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -22,9 +24,11 @@ export default class World {
     this.mouse = { x: -100, y: -100 };
     this.systems = systems;
     this.entities = new Map();
+    this.keyboard = new Keyboard();
 
     this.createEntityMapping(entities);
     this.createMouseListener();
+    this.createKeyboardListener();
   }
 
   add(entity: Entity) {
@@ -67,6 +71,16 @@ export default class World {
     this.canvas.addEventListener("mousemove", (ev) => {
       this.mouse.x = ev.clientX - canvasRect.left;
       this.mouse.y = ev.clientY - canvasRect.top;
+    });
+  }
+
+  createKeyboardListener() {
+    document.body.addEventListener("keydown", (ev) => {
+      this.keyboard.press(ev.key);
+    });
+
+    document.body.addEventListener("keyup", (ev) => {
+      this.keyboard.release(ev.key);
     });
   }
 }
