@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "homepage": "https://bendiksolheim.github.io/entity-component-system",
+  "private": true,
   "scripts": {
     "build": "webpack",
     "watch": "webpack-dev-server --no-inline",
