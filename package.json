@@ -8,7 +8,9 @@
   "scripts": {
     "build": "webpack",
     "watch": "webpack-dev-server --no-inline",
-    "start": "npm run watch"
+    "start": "npm run watch",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "keywords": [],
   "author": "",
