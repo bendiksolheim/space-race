@@ -12,10 +12,10 @@ const red = { r: 250, g: 0, b: 0 };
 const black = { r: 0, g: 0, b: 0 };
 
 export function player(x: number, y: number, stage: PIXI.Container): Entity {
-  const path = [0, 64, 25, 0, 50, 64, 25, 50];
+  const path = [0, 32, 12.5, 0, 25, 32, 12.5, 25];
   const g = new PIXI.Graphics();
-  g.pivot.set(25, 32);
-  g.lineStyle(2, 0xcecece, 1);
+  g.pivot.set(16, 12.5);
+  g.lineStyle(3, 0xcecece, 1);
   g.drawPolygon(path);
   g.x = x;
   g.y = y;
