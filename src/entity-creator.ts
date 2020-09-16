@@ -18,7 +18,7 @@ export function player(x: number, y: number, stage: PIXI.Container): Entity {
   g.lineStyle(2, 0xcecece, 1);
   g.drawPolygon(path);
   g.x = x;
-  g.y = x;
+  g.y = y;
 
   const player = new PixiEntity();
   player.addDisplayObject(g, stage);
