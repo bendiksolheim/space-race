@@ -31,12 +31,21 @@ export default system(
       position.x = ((position.x % width) + width) % width;
       position.y = ((position.y % height) + height) % height;
 
-      velocity.x *= 0.99;
-      velocity.y *= 0.99;
+      if (Math.abs(velocity.x) < 0.01) {
+        velocity.x = 0;
+      } else {
+        velocity.x *= 0.999;
+      }
+
+      if (Math.abs(velocity.y) < 0.01) {
+        velocity.y = 0;
+      } else {
+        velocity.y *= 0.999;
+      }
     });
   }
 );
 
 const FULL_CIRCLE = 2 * Math.PI;
 const ANGLE_DELTA = FULL_CIRCLE / 60;
-const SPEED = 0.5;
+const SPEED = 0.25;
