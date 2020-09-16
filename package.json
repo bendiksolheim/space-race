@@ -10,7 +10,7 @@
     "watch": "webpack-dev-server --no-inline",
     "start": "npm run watch",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "keywords": [],
   "author": "",
