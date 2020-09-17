@@ -44058,14 +44058,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+const ecs_1 = __webpack_require__(/*! ./ecs */ "./src/ecs/index.ts");
+const entity_creator_1 = __webpack_require__(/*! ./entity-creator */ "./src/entity-creator.ts");
 const entity_creator_ts_1 = __webpack_require__(/*! ./entity-creator.ts */ "./src/entity-creator.ts");
 const brick_collision_1 = __importDefault(__webpack_require__(/*! ./systems/brick-collision */ "./src/systems/brick-collision.ts"));
 const input_1 = __importDefault(__webpack_require__(/*! ./systems/input */ "./src/systems/input.ts"));
 const physics_1 = __importDefault(__webpack_require__(/*! ./systems/physics */ "./src/systems/physics.ts"));
 const render_1 = __importDefault(__webpack_require__(/*! ./systems/render */ "./src/systems/render.ts"));
 const world_collision_1 = __importDefault(__webpack_require__(/*! ./systems/world-collision */ "./src/systems/world-collision.ts"));
-const ecs_1 = __webpack_require__(/*! ./ecs */ "./src/ecs/index.ts");
-const entity_creator_1 = __webpack_require__(/*! ./entity-creator */ "./src/entity-creator.ts");
 const pixi = new PIXI.Application({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -44073,12 +44073,6 @@ const pixi = new PIXI.Application({
     antialias: false,
 });
 pixi.view.style.display = "block";
-// const canvas = document.createElement("canvas") as HTMLCanvasElement;
-// canvas.width = window.innerWidth;
-// canvas.height = window.innerHeight;
-// canvas.style.display = "block";
-// canvas.style.backgroundColor = "#000";
-// canvas.style.cursor = "none";
 document.body.style.margin = "0px";
 document.body.style.padding = "0px";
 document.body.appendChild(pixi.view);
