@@ -1,4 +1,4 @@
-# Entity Component System
+# Space race
 
 Simple implementation of an Entity Component System in Typescript. Proof of concept,
 just to explore the architecture.
