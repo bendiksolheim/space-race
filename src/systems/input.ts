@@ -1,8 +1,9 @@
 import Controlled from "../components/controlled";
 import Position from "../components/position";
-import { World, system, Entity, Key } from "../ecs";
+import { World, system, Entity, Key } from "ecs";
 import Rotation from "../components/rotation";
 import Velocity from "../components/velocity";
+import { Rect, rect } from "../primitives/rect";
 
 export default system(
   [Controlled, Position, Rotation, Velocity],
@@ -26,7 +27,7 @@ export default system(
         position.y += velocity.y;
       }
 
-      const { width, height } = world.boundingBox();
+      const { width, height } = worldBox(world);
       // Black magic to make entity wrap around edges
       position.x = ((position.x % width) + width) % width;
       position.y = ((position.y % height) + height) % height;
@@ -45,6 +46,11 @@ export default system(
     });
   }
 );
+
+function worldBox(world: World): Rect {
+  const canvas = world.canvas;
+  return rect(0, 0, canvas.width, canvas.height);
+}
 
 const FULL_CIRCLE = 2 * Math.PI;
 const ANGLE_DELTA = FULL_CIRCLE / 60;

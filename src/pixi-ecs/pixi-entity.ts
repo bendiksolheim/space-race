@@ -1,4 +1,4 @@
-import { Entity } from "../ecs";
+import { Entity, World } from "ecs";
 import * as PIXI from "pixi.js";
 import Position from "../components/position";
 import Displayable from "../components/displayable";

@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import { World } from "./ecs";
+import { World } from "ecs";
 import { player } from "./entity-creator";
 import { mkEntities } from "./entity-creator.ts";
 import brickCollision from "./systems/brick-collision";

@@ -1,6 +1,6 @@
 import Position from "../components/position";
 import Velocity from "../components/velocity";
-import { World, system, Entity } from "../ecs";
+import { World, system, Entity } from "ecs";
 
 export default system(
   [Position, Velocity],

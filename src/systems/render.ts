@@ -1,6 +1,6 @@
 import Appearance, { Color } from "../components/appearance";
 import Position from "../components/position";
-import { World, system, Entity, Component } from "../ecs";
+import { World, system, Entity, Component } from "ecs";
 import Displayable from "../components/displayable";
 import Rotation from "../components/rotation";
 import Velocity from "../components/velocity";

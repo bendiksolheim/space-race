@@ -1,4 +1,4 @@
-import { Component } from "../ecs";
+import { Component } from "ecs";
 import * as PIXI from "pixi.js";
 
 class Displayable implements Component {

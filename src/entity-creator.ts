@@ -3,7 +3,7 @@ import Collidable from "./components/collidable";
 import Controlled from "./components/controlled";
 import Position from "./components/position";
 import Velocity from "./components/velocity";
-import { Entity } from "./ecs";
+import { Entity } from "ecs";
 import PixiEntity from "./pixi-ecs/pixi-entity";
 import * as PIXI from "pixi.js";
 

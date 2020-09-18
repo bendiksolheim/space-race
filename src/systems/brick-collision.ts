@@ -3,7 +3,7 @@ import Collidable from "../components/collidable";
 import Controlled from "../components/controlled";
 import Position from "../components/position";
 import Velocity from "../components/velocity";
-import { Entity, system, World } from "../ecs";
+import { Entity, system, World } from "ecs";
 import boundingBox from "../math/bounding-box";
 import { Rect } from "../primitives/rect";
 
