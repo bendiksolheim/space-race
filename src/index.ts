@@ -2,11 +2,10 @@ import * as PIXI from "pixi.js";
 import { World } from "ecs";
 import { player } from "./entity-creator";
 import { mkEntities } from "./entity-creator.ts";
-import brickCollision from "./systems/brick-collision";
+import collision from "./systems/collision";
 import input from "./systems/input";
 import physics from "./systems/physics";
 import render from "./systems/render";
-import worldCollision from "./systems/world-collision";
 
 const pixi = new PIXI.Application({
   width: window.innerWidth,
@@ -25,13 +24,12 @@ const entities = mkEntities(
   player(window.innerWidth / 2, window.innerHeight / 2, pixi.stage)
 );
 
-const world = new World(pixi.view, entities, [
-  input,
-  physics,
-  worldCollision,
-  brickCollision,
-  render,
-]);
+const world = new World(
+  pixi.view,
+  entities,
+  [input, physics, collision],
+  [render]
+);
 
 function gameLoop() {
   world.tick();
