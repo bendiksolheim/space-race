@@ -31,35 +31,3 @@ function ifHas<C extends Component>(
     fn(entity.get(component));
   }
 }
-
-function drawSquare(
-  context: CanvasRenderingContext2D,
-  color: Color,
-  width: number,
-  height: number,
-  position: Position
-): void {
-  const { x, y } = position;
-  context.beginPath();
-  context.fillStyle = rgb(color);
-  context.strokeStyle = "rgba(0,0,0,1)";
-  context.fillRect(x, y, width, height);
-}
-
-function drawCircle(
-  context: CanvasRenderingContext2D,
-  color: Color,
-  radius: number,
-  position: Position
-): void {
-  const { x, y } = position;
-  context.beginPath();
-  context.fillStyle = rgb(color);
-  context.strokeStyle = "rgba(0,0,0,1)";
-  context.arc(x, y, radius, 0, 2 * Math.PI, false);
-  context.fill();
-}
-
-function rgb(color: Color) {
-  return `rgb(${color.r},${color.g},${color.b})`;
-}
