@@ -28,13 +28,8 @@ const world = new World(
   pixi.view,
   entities,
   [input, physics, collision],
-  [render]
+  [render],
+  { fps: 60, debug: false }
 );
 
-function gameLoop() {
-  world.tick();
-
-  requestAnimationFrame(gameLoop);
-}
-
-gameLoop();
+world.start();
