@@ -1,7 +1,6 @@
 import * as PIXI from "pixi.js";
 import { World } from "ecs";
-import { player } from "./entity-creator";
-import { mkEntities } from "./entity-creator.ts";
+import { player, wall } from "./entity-creator";
 import collision from "./systems/collision";
 import input from "./systems/input";
 import physics from "./systems/physics";
@@ -20,9 +19,10 @@ document.body.style.margin = "0px";
 document.body.style.padding = "0px";
 document.body.appendChild(pixi.view);
 
-const entities = mkEntities(
-  player(window.innerWidth / 2, window.innerHeight / 2, pixi.stage)
-);
+const entities = [
+  player(window.innerWidth / 2, window.innerHeight / 2, pixi.stage),
+  wall(window.innerWidth, window.innerHeight, pixi.stage),
+];
 
 const world = new World(
   pixi.view,

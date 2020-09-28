@@ -1,51 +1,45 @@
-import Appearance from "../components/appearance";
-import Collidable from "../components/collidable";
-import Controlled from "../components/controlled";
+import Size from "../components/size";
 import Position from "../components/position";
-import Velocity from "../components/velocity";
 import { Entity, logicSystem, World } from "ecs";
 import boundingBox from "../math/bounding-box";
 import { Rect } from "../primitives/rect";
 
 export default logicSystem(
-  [Position, Appearance],
+  [Position, Size],
   (entities: Entity[], world: World) => {
-    const ball = entities.find((e) => e.has(Velocity));
-
-    if (!ball) {
-      return;
-    }
-
-    const bricks = entities.filter((e) => e.has(Collidable));
-    const ballRect = boundingBox(ball.get(Position), ball.get(Appearance));
-
-    bricks.forEach((brick) => {
-      const brickRect = boundingBox(brick.get(Position), brick.get(Appearance));
-      const c = collision(ballRect, brickRect);
-      if (c !== undefined) {
-        if (!brick.has(Controlled)) {
-          world.removeEntity(brick.id);
-        }
-        switch (c) {
-          case Collision.TOP:
-            ball.get(Velocity).y *= -1;
-            break;
-          case Collision.BOTTOM:
-            ball.get(Velocity).y *= -1;
-            break;
-          case Collision.LEFT:
-            ball.get(Velocity).x *= -1;
-            break;
-          case Collision.RIGHT:
-            ball.get(Velocity).x *= -1;
-            break;
-        }
-      }
-    });
+    // const ball = entities.find((e) => e.has(Velocity));
+    // if (!ball) {
+    //   return;
+    // }
+    // const bricks = entities.filter((e) => e.has(Collidable));
+    // const ballRect = boundingBox(ball.get(Position), ball.get(Appearance));
+    // bricks.forEach((brick) => {
+    //   const brickRect = boundingBox(brick.get(Position), brick.get(Appearance));
+    //   const c = intersects(ballRect, brickRect);
+    //   if (c !== undefined) {
+    //     if (!brick.has(Controlled)) {
+    //       world.removeEntity(brick.id);
+    //     }
+    //     switch (c) {
+    //       case Collision.TOP:
+    //         ball.get(Velocity).y *= -1;
+    //         break;
+    //       case Collision.BOTTOM:
+    //         ball.get(Velocity).y *= -1;
+    //         break;
+    //       case Collision.LEFT:
+    //         ball.get(Velocity).x *= -1;
+    //         break;
+    //       case Collision.RIGHT:
+    //         ball.get(Velocity).x *= -1;
+    //         break;
+    //     }
+    //   }
+    // });
   }
 );
 
-function collision(a: Rect, b: Rect): Collision | undefined {
+function intersects(a: Rect, b: Rect): Collision | undefined {
   const w = 0.5 * (a.width + b.width);
   const h = 0.5 * (a.height + b.height);
   const dx = a.x1 + a.width / 2 - (b.x1 + b.width / 2);

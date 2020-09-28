@@ -28,6 +28,24 @@ export function player(x: number, y: number, stage: PIXI.Container): Entity {
   return player;
 }
 
+export function wall(
+  width: number,
+  height: number,
+  stage: PIXI.Container
+): Entity {
+  const path = [0, 0, 0, 100];
+  const g = new PIXI.Graphics();
+  g.lineStyle(3, 0xcecece, 1);
+  g.drawPolygon(path);
+  g.x = (width / 3) * 2;
+  g.y = (height / 3) * 2;
+
+  const wall = new PixiEntity();
+  wall.addDisplayObject(g, stage);
+  wall.add(new Collidable());
+  return wall;
+}
+
 export function mkPaddle(stage: PIXI.Container): Entity {
   const g = new PIXI.Graphics();
   g.beginFill(0xcecece);
@@ -64,12 +82,4 @@ export function mkBrick(
   );
   brick.add(new Collidable());
   return brick;
-}
-
-export function mkEntities(...entities: Entity[]): Record<string, Entity> {
-  const initial: Record<string, Entity> = {};
-  return entities.reduce((prev, cur) => {
-    prev[cur.id] = cur;
-    return prev;
-  }, initial);
 }
