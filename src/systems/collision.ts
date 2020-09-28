@@ -1,6 +1,4 @@
-import Size from "../components/size";
-import Position from "../components/position";
-import { Entity, logicSystem, World } from "ecs";
+import { Entity, logicSystem, World, Size, Position } from "ecs";
 import boundingBox from "../math/bounding-box";
 import { Rect } from "../primitives/rect";
 

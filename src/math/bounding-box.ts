@@ -1,5 +1,5 @@
 import Appearance from "../components/appearance";
-import Position from "../components/position";
+import { Position } from "ecs";
 import { Rect } from "../primitives/rect";
 
 export default function boundingBox(

@@ -1,5 +1,4 @@
-import { Entity, logicSystem, World } from "ecs";
-import Position from "../components/position";
+import { Entity, logicSystem, World, Position } from "ecs";
 import Velocity from "../components/velocity";
 import { Rect, rect } from "../primitives/rect";
 

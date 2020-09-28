@@ -1,7 +1,5 @@
-import { Entity, Key, logicSystem, World } from "ecs";
+import { Entity, Key, logicSystem, World, Position, Rotation } from "ecs";
 import Controlled from "../components/controlled";
-import Position from "../components/position";
-import Rotation from "../components/rotation";
 import Velocity from "../components/velocity";
 
 export default logicSystem(

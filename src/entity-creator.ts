@@ -1,10 +1,8 @@
 import Appearance from "./components/appearance";
 import Collidable from "./components/collidable";
 import Controlled from "./components/controlled";
-import Position from "./components/position";
 import Velocity from "./components/velocity";
-import { Entity } from "ecs";
-import PixiEntity from "./pixi-ecs/pixi-entity";
+import { Entity, Position, PixiEntity } from "ecs";
 import * as PIXI from "pixi.js";
 
 const grey = { r: 100, g: 100, b: 100 };

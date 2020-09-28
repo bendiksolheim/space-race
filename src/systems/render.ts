@@ -1,8 +1,13 @@
 import Appearance, { Color } from "../components/appearance";
-import Position from "../components/position";
-import { World, renderSystem, Entity, Component } from "ecs";
-import Displayable from "../components/displayable";
-import Rotation from "../components/rotation";
+import {
+  World,
+  renderSystem,
+  Entity,
+  Component,
+  Rotation,
+  Displayable,
+  Position,
+} from "ecs";
 import Velocity from "../components/velocity";
 
 export default renderSystem(
