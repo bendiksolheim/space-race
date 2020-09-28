@@ -1,7 +1,6 @@
 # Space race
 
-Simple implementation of an Entity Component System in Typescript. Proof of concept,
-just to explore the architecture.
+Simple game implemented with an entity component system ([link](https://github.com/bendiksolheim/ecs))
 
 ## Resources
 
