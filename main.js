@@ -36584,6 +36584,340 @@ earcut.flatten = function (data) {
 
 /***/ }),
 
+/***/ "./node_modules/ecs/dist/entity.js":
+/*!*****************************************!*\
+  !*** ./node_modules/ecs/dist/entity.js ***!
+  \*****************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Entity; });
+class Entity {
+    constructor() {
+        this.id = randomId();
+        this.components = new Map();
+    }
+    add(component) {
+        const i = component.constructor;
+        this.components.set(i, component);
+    }
+    remove(component) {
+        this.components.delete(component);
+    }
+    has(component) {
+        return this.components.has(component);
+    }
+    ifHas(component, fn) {
+        if (this.has(component)) {
+            fn(this.get(component));
+        }
+    }
+    get(component) {
+        return this.components.get(component);
+    }
+    print() {
+        const components = [...this.components];
+        console.log(JSON.stringify({ id: this.id, components }, null, 4));
+    }
+}
+let counter = 0;
+function randomId() {
+    let _counter = counter;
+    counter += 1;
+    return (Date.now().toString(16) +
+        ((Math.random() * 100000000) | 0).toString(16) +
+        _counter);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/index.js":
+/*!****************************************!*\
+  !*** ./node_modules/ecs/dist/index.js ***!
+  \****************************************/
+/*! exports provided: Entity, logicSystem, renderSystem, World, Key */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entity */ "./node_modules/ecs/dist/entity.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Entity", function() { return _entity__WEBPACK_IMPORTED_MODULE_0__["default"]; });
+
+/* harmony import */ var _render_system__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render-system */ "./node_modules/ecs/dist/render-system.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "renderSystem", function() { return _render_system__WEBPACK_IMPORTED_MODULE_1__["default"]; });
+
+/* harmony import */ var _logic_system__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./logic-system */ "./node_modules/ecs/dist/logic-system.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "logicSystem", function() { return _logic_system__WEBPACK_IMPORTED_MODULE_2__["default"]; });
+
+/* harmony import */ var _world__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./world */ "./node_modules/ecs/dist/world.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "World", function() { return _world__WEBPACK_IMPORTED_MODULE_3__["default"]; });
+
+/* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./keyboard */ "./node_modules/ecs/dist/keyboard.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Key", function() { return _keyboard__WEBPACK_IMPORTED_MODULE_4__["Key"]; });
+
+
+
+
+
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/keyboard.js":
+/*!*******************************************!*\
+  !*** ./node_modules/ecs/dist/keyboard.js ***!
+  \*******************************************/
+/*! exports provided: Key, default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Key", function() { return Key; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Keyboard; });
+var Key;
+(function (Key) {
+    Key["Up"] = "ArrowUp";
+    Key["Down"] = "ArrowDown";
+    Key["Left"] = "ArrowLeft";
+    Key["Right"] = "ArrowRight";
+})(Key || (Key = {}));
+function reverseEnum(e) {
+    const ret = {};
+    Object.keys(e).forEach((k) => {
+        const v = e[k];
+        ret[v] = k;
+    });
+    return ret;
+}
+const reverseMapping = reverseEnum(Key);
+class Keyboard {
+    constructor() {
+        this.state = new Map();
+    }
+    press(key) {
+        this.state.set(key, true);
+    }
+    release(key) {
+        this.state.set(key, false);
+    }
+    pressed(key) {
+        return this.state.get(key) || false;
+    }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/logic-system.js":
+/*!***********************************************!*\
+  !*** ./node_modules/ecs/dist/logic-system.js ***!
+  \***********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const logicSystem = (filter, tick) => {
+    return {
+        filter,
+        tick,
+    };
+};
+/* harmony default export */ __webpack_exports__["default"] = (logicSystem);
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/make-entities.js":
+/*!************************************************!*\
+  !*** ./node_modules/ecs/dist/make-entities.js ***!
+  \************************************************/
+/*! exports provided: makeEntities */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "makeEntities", function() { return makeEntities; });
+function makeEntities(entities) {
+    const initial = {};
+    return entities.reduce((prev, cur) => {
+        prev[cur.id] = cur;
+        return prev;
+    }, initial);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/render-system.js":
+/*!************************************************!*\
+  !*** ./node_modules/ecs/dist/render-system.js ***!
+  \************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const renderSystem = (filter, tick) => {
+    return {
+        filter,
+        tick,
+    };
+};
+/* harmony default export */ __webpack_exports__["default"] = (renderSystem);
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/world.js":
+/*!****************************************!*\
+  !*** ./node_modules/ecs/dist/world.js ***!
+  \****************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return World; });
+/* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./keyboard */ "./node_modules/ecs/dist/keyboard.js");
+/* harmony import */ var _make_entities__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./make-entities */ "./node_modules/ecs/dist/make-entities.js");
+
+
+const defaultRenderConfig = {
+    fps: 60,
+    debug: false,
+};
+class World {
+    constructor(canvas, entities, logicSystems, renderSystems, renderConfig = defaultRenderConfig) {
+        this.canvas = canvas;
+        this.context = canvas.getContext("2d");
+        this.mouse = { x: -100, y: -100 };
+        this.logicSystems = logicSystems;
+        this.renderSystems = renderSystems;
+        this.entities = new Map();
+        this.keyboard = new _keyboard__WEBPACK_IMPORTED_MODULE_0__["default"]();
+        this.renderState = {
+            fps: renderConfig.fps,
+            previous: 0,
+            frameDuration: 1000 / renderConfig.fps,
+            lag: 0,
+        };
+        this.debug = renderConfig.debug;
+        this.createEntityMapping(Object(_make_entities__WEBPACK_IMPORTED_MODULE_1__["makeEntities"])(entities));
+        this.createMouseListener();
+        this.createKeyboardListener();
+    }
+    add(entity) {
+        this.entities.forEach((entities, filter) => {
+            if (matches(entity, filter)) {
+                entities.set(entity.id, entity);
+            }
+        });
+    }
+    removeEntity(id) {
+        this.entities.forEach((value) => {
+            value.delete(id);
+        });
+    }
+    start() {
+        log(this.debug, "Starting rendering", this.renderState);
+        this.tick();
+    }
+    tick(timestamp) {
+        if (!timestamp) {
+            timestamp = 0;
+        }
+        // Calculate time since last frame
+        let elapsed = timestamp - this.renderState.previous;
+        log(this.debug, "Elapsed", elapsed);
+        // Handle case where time since last frame is unreasonably high
+        if (elapsed > 1000) {
+            elapsed = this.renderState.frameDuration;
+        }
+        // Add elapsed time to lag counter
+        this.renderState.lag += elapsed;
+        log(this.debug, "Frame", this.renderState);
+        let count = 0;
+        while (this.renderState.lag >= this.renderState.frameDuration) {
+            count += 1;
+            this.logicSystems.forEach((system) => {
+                const entities = Array.from(this.entities.get(system.filter).values());
+                return system.tick(entities, this);
+            });
+            this.renderState.lag -= this.renderState.frameDuration;
+        }
+        log(this.debug, "Update ran", count, "times");
+        const lagOffset = this.renderState.lag / this.renderState.frameDuration;
+        this.renderSystems.forEach((system) => {
+            const entities = Array.from(this.entities.get(system.filter).values());
+            return system.tick(entities, lagOffset, this);
+        });
+        this.renderState.previous = timestamp;
+        requestAnimationFrame((n) => this.tick(n));
+    }
+    createEntityMapping(entities) {
+        this.logicSystems.forEach((system) => {
+            const entityMap = new Map();
+            filterEntities(entities, system.filter).forEach((entity) => {
+                entityMap.set(entity.id, entity);
+            });
+            this.entities.set(system.filter, entityMap);
+        });
+        this.renderSystems.forEach((system) => {
+            const entityMap = new Map();
+            filterEntities(entities, system.filter).forEach((entity) => {
+                entityMap.set(entity.id, entity);
+            });
+            this.entities.set(system.filter, entityMap);
+        });
+    }
+    createMouseListener() {
+        const canvasRect = this.canvas.getBoundingClientRect();
+        this.canvas.addEventListener("mousemove", (ev) => {
+            this.mouse.x = ev.clientX - canvasRect.left;
+            this.mouse.y = ev.clientY - canvasRect.top;
+        });
+    }
+    createKeyboardListener() {
+        document.body.addEventListener("keydown", (ev) => {
+            this.keyboard.press(ev.key);
+        });
+        document.body.addEventListener("keyup", (ev) => {
+            this.keyboard.release(ev.key);
+        });
+    }
+}
+function filterEntities(entities, filter) {
+    return Object.values(entities).filter((entity) => matches(entity, filter));
+}
+function matches(entity, filter) {
+    return filter.every((component) => entity.has(component));
+}
+function log(debug, ...msg) {
+    if (debug) {
+        const messages = msg.map((m) => {
+            if (typeof m === "object") {
+                return JSON.stringify(m);
+            }
+            else if (typeof m === "string") {
+                return m;
+            }
+            else {
+                return String(m);
+            }
+        });
+        console.log.apply(undefined, messages);
+    }
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/es6-promise-polyfill/promise.js":
 /*!******************************************************!*\
   !*** ./node_modules/es6-promise-polyfill/promise.js ***!
@@ -43678,6 +44012,28 @@ exports.default = Rotation;
 
 /***/ }),
 
+/***/ "./src/components/size.ts":
+/*!********************************!*\
+  !*** ./src/components/size.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class Size {
+    constructor(width, height) {
+        this.name = "size";
+        this.width = width;
+        this.height = height;
+    }
+}
+exports.default = Size;
+
+
+/***/ }),
+
 /***/ "./src/components/velocity.ts":
 /*!************************************!*\
   !*** ./src/components/velocity.ts ***!
@@ -43696,229 +44052,6 @@ class Velocity {
     }
 }
 exports.default = Velocity;
-
-
-/***/ }),
-
-/***/ "./src/ecs/entity.ts":
-/*!***************************!*\
-  !*** ./src/ecs/entity.ts ***!
-  \***************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class Entity {
-    constructor() {
-        this.id = randomId();
-        this.components = new Map();
-    }
-    add(component) {
-        const i = component.constructor;
-        this.components.set(i, component);
-    }
-    remove(component) {
-        this.components.delete(component);
-    }
-    has(component) {
-        return this.components.has(component);
-    }
-    get(component) {
-        return this.components.get(component);
-    }
-    print() {
-        const components = [...this.components];
-        console.log(JSON.stringify({ id: this.id, components }, null, 4));
-    }
-}
-exports.default = Entity;
-let counter = 0;
-function randomId() {
-    let _counter = counter;
-    counter += 1;
-    return (Date.now().toString(16) +
-        ((Math.random() * 100000000) | 0).toString(16) +
-        _counter);
-}
-
-
-/***/ }),
-
-/***/ "./src/ecs/index.ts":
-/*!**************************!*\
-  !*** ./src/ecs/index.ts ***!
-  \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Key = exports.World = exports.system = exports.Entity = void 0;
-const entity_1 = __importDefault(__webpack_require__(/*! ./entity */ "./src/ecs/entity.ts"));
-exports.Entity = entity_1.default;
-const system_1 = __importDefault(__webpack_require__(/*! ./system */ "./src/ecs/system.ts"));
-exports.system = system_1.default;
-const world_1 = __importDefault(__webpack_require__(/*! ./world */ "./src/ecs/world.ts"));
-exports.World = world_1.default;
-const keyboard_1 = __webpack_require__(/*! ./keyboard */ "./src/ecs/keyboard.ts");
-Object.defineProperty(exports, "Key", { enumerable: true, get: function () { return keyboard_1.Key; } });
-
-
-/***/ }),
-
-/***/ "./src/ecs/keyboard.ts":
-/*!*****************************!*\
-  !*** ./src/ecs/keyboard.ts ***!
-  \*****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Key = void 0;
-var Key;
-(function (Key) {
-    Key["Up"] = "ArrowUp";
-    Key["Down"] = "ArrowDown";
-    Key["Left"] = "ArrowLeft";
-    Key["Right"] = "ArrowRight";
-})(Key = exports.Key || (exports.Key = {}));
-function reverseEnum(e) {
-    const ret = {};
-    Object.keys(e).forEach((k) => {
-        const v = e[k];
-        ret[v] = k;
-    });
-    return ret;
-}
-const reverseMapping = reverseEnum(Key);
-class Keyboard {
-    constructor() {
-        this.state = new Map();
-    }
-    press(key) {
-        this.state.set(key, true);
-    }
-    release(key) {
-        this.state.set(key, false);
-    }
-    pressed(key) {
-        return this.state.get(key) || false;
-    }
-}
-exports.default = Keyboard;
-
-
-/***/ }),
-
-/***/ "./src/ecs/system.ts":
-/*!***************************!*\
-  !*** ./src/ecs/system.ts ***!
-  \***************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const system = (filter, tick) => {
-    return {
-        filter,
-        tick,
-    };
-};
-exports.default = system;
-
-
-/***/ }),
-
-/***/ "./src/ecs/world.ts":
-/*!**************************!*\
-  !*** ./src/ecs/world.ts ***!
-  \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const rect_1 = __webpack_require__(/*! ../primitives/rect */ "./src/primitives/rect.ts");
-const keyboard_1 = __importDefault(__webpack_require__(/*! ./keyboard */ "./src/ecs/keyboard.ts"));
-class World {
-    constructor(canvas, entities, systems) {
-        this.canvas = canvas;
-        this.context = canvas.getContext("2d");
-        this.mouse = { x: -100, y: -100 };
-        this.systems = systems;
-        this.entities = new Map();
-        this.keyboard = new keyboard_1.default();
-        this.createEntityMapping(entities);
-        this.createMouseListener();
-        this.createKeyboardListener();
-    }
-    add(entity) {
-        this.entities.forEach((entities, filter) => {
-            if (matches(entity, filter)) {
-                entities.set(entity.id, entity);
-            }
-        });
-    }
-    removeEntity(id) {
-        this.entities.forEach((value) => {
-            value.delete(id);
-        });
-    }
-    boundingBox() {
-        return rect_1.rect(0, 0, this.canvas.width, this.canvas.height);
-    }
-    tick() {
-        this.systems.forEach((system) => {
-            const entities = Array.from(this.entities.get(system.filter).values());
-            return system.tick(entities, this);
-        });
-    }
-    createEntityMapping(entities) {
-        this.systems.forEach((system) => {
-            const entityMap = new Map();
-            filterEntities(entities, system.filter).forEach((entity) => {
-                entityMap.set(entity.id, entity);
-            });
-            this.entities.set(system.filter, entityMap);
-        });
-    }
-    createMouseListener() {
-        const canvasRect = this.canvas.getBoundingClientRect();
-        this.canvas.addEventListener("mousemove", (ev) => {
-            this.mouse.x = ev.clientX - canvasRect.left;
-            this.mouse.y = ev.clientY - canvasRect.top;
-        });
-    }
-    createKeyboardListener() {
-        document.body.addEventListener("keydown", (ev) => {
-            this.keyboard.press(ev.key);
-        });
-        document.body.addEventListener("keyup", (ev) => {
-            this.keyboard.release(ev.key);
-        });
-    }
-}
-exports.default = World;
-function filterEntities(entities, filter) {
-    return Object.values(entities).filter((entity) => matches(entity, filter));
-}
-function matches(entity, filter) {
-    return filter.every((component) => entity.has(component));
-}
 
 
 /***/ }),
@@ -43955,13 +44088,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mkEntities = exports.mkBrick = exports.mkBall = exports.mkPaddle = exports.player = void 0;
+exports.mkBrick = exports.mkBall = exports.mkPaddle = exports.wall = exports.player = void 0;
 const appearance_1 = __importDefault(__webpack_require__(/*! ./components/appearance */ "./src/components/appearance.ts"));
 const collidable_1 = __importDefault(__webpack_require__(/*! ./components/collidable */ "./src/components/collidable.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ./components/controlled */ "./src/components/controlled.ts"));
 const position_1 = __importDefault(__webpack_require__(/*! ./components/position */ "./src/components/position.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ./components/velocity */ "./src/components/velocity.ts"));
-const ecs_1 = __webpack_require__(/*! ./ecs */ "./src/ecs/index.ts");
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const pixi_entity_1 = __importDefault(__webpack_require__(/*! ./pixi-ecs/pixi-entity */ "./src/pixi-ecs/pixi-entity.ts"));
 const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
 const grey = { r: 100, g: 100, b: 100 };
@@ -43983,6 +44116,19 @@ function player(x, y, stage) {
     return player;
 }
 exports.player = player;
+function wall(width, height, stage) {
+    const path = [0, 0, 0, 100];
+    const g = new PIXI.Graphics();
+    g.lineStyle(3, 0xcecece, 1);
+    g.drawPolygon(path);
+    g.x = (width / 3) * 2;
+    g.y = (height / 3) * 2;
+    const wall = new pixi_entity_1.default();
+    wall.addDisplayObject(g, stage);
+    wall.add(new collidable_1.default());
+    return wall;
+}
+exports.wall = wall;
 function mkPaddle(stage) {
     const g = new PIXI.Graphics();
     g.beginFill(0xcecece);
@@ -44013,14 +44159,6 @@ function mkBrick(x, y, width, height) {
     return brick;
 }
 exports.mkBrick = mkBrick;
-function mkEntities(...entities) {
-    const initial = {};
-    return entities.reduce((prev, cur) => {
-        prev[cur.id] = cur;
-        return prev;
-    }, initial);
-}
-exports.mkEntities = mkEntities;
 
 
 /***/ }),
@@ -44058,14 +44196,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
-const ecs_1 = __webpack_require__(/*! ./ecs */ "./src/ecs/index.ts");
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const entity_creator_1 = __webpack_require__(/*! ./entity-creator */ "./src/entity-creator.ts");
-const entity_creator_ts_1 = __webpack_require__(/*! ./entity-creator.ts */ "./src/entity-creator.ts");
-const brick_collision_1 = __importDefault(__webpack_require__(/*! ./systems/brick-collision */ "./src/systems/brick-collision.ts"));
+const collision_1 = __importDefault(__webpack_require__(/*! ./systems/collision */ "./src/systems/collision.ts"));
 const input_1 = __importDefault(__webpack_require__(/*! ./systems/input */ "./src/systems/input.ts"));
 const physics_1 = __importDefault(__webpack_require__(/*! ./systems/physics */ "./src/systems/physics.ts"));
 const render_1 = __importDefault(__webpack_require__(/*! ./systems/render */ "./src/systems/render.ts"));
-const world_collision_1 = __importDefault(__webpack_require__(/*! ./systems/world-collision */ "./src/systems/world-collision.ts"));
 const pixi = new PIXI.Application({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -44076,56 +44212,12 @@ pixi.view.style.display = "block";
 document.body.style.margin = "0px";
 document.body.style.padding = "0px";
 document.body.appendChild(pixi.view);
-const entities = entity_creator_ts_1.mkEntities(entity_creator_1.player(window.innerWidth / 2, window.innerHeight / 2, pixi.stage));
-const world = new ecs_1.World(pixi.view, entities, [
-    input_1.default,
-    physics_1.default,
-    world_collision_1.default,
-    brick_collision_1.default,
-    render_1.default,
-]);
-function gameLoop() {
-    world.tick();
-    requestAnimationFrame(gameLoop);
-}
-gameLoop();
-
-
-/***/ }),
-
-/***/ "./src/math/bounding-box.ts":
-/*!**********************************!*\
-  !*** ./src/math/bounding-box.ts ***!
-  \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function boundingBox(position, appearance) {
-    switch (appearance.shape.kind) {
-        case "square":
-            return {
-                x1: position.x,
-                y1: position.y,
-                x2: position.x + appearance.shape.width,
-                y2: position.y + appearance.shape.height,
-                width: appearance.shape.width,
-                height: appearance.shape.height,
-            };
-        case "circle":
-            return {
-                x1: position.x - appearance.shape.radius,
-                y1: position.y - appearance.shape.radius,
-                x2: position.x + appearance.shape.radius,
-                y2: position.y + appearance.shape.radius,
-                width: appearance.shape.radius * 2,
-                height: appearance.shape.radius * 2,
-            };
-    }
-}
-exports.default = boundingBox;
+const entities = [
+    entity_creator_1.player(window.innerWidth / 2, window.innerHeight / 2, pixi.stage),
+    entity_creator_1.wall(window.innerWidth, window.innerHeight, pixi.stage),
+];
+const world = new ecs_1.World(pixi.view, entities, [input_1.default, physics_1.default, collision_1.default], [render_1.default], { fps: 60, debug: false });
+world.start();
 
 
 /***/ }),
@@ -44143,16 +44235,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ../ecs */ "./src/ecs/index.ts");
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
 const displayable_1 = __importDefault(__webpack_require__(/*! ../components/displayable */ "./src/components/displayable.ts"));
 const rotation_1 = __importDefault(__webpack_require__(/*! ../components/rotation */ "./src/components/rotation.ts"));
+const size_1 = __importDefault(__webpack_require__(/*! ../components/size */ "./src/components/size.ts"));
 class PixiEntity extends ecs_1.Entity {
     addDisplayObject(obj, container) {
         container.addChild(obj);
         this.add(new position_1.default(obj.x, obj.y));
         this.add(new displayable_1.default(obj));
         this.add(new rotation_1.default(obj.rotation));
+        this.add(new size_1.default(obj.width, obj.height));
     }
 }
 exports.default = PixiEntity;
@@ -44186,10 +44280,10 @@ exports.rect = rect;
 
 /***/ }),
 
-/***/ "./src/systems/brick-collision.ts":
-/*!****************************************!*\
-  !*** ./src/systems/brick-collision.ts ***!
-  \****************************************/
+/***/ "./src/systems/collision.ts":
+/*!**********************************!*\
+  !*** ./src/systems/collision.ts ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44199,45 +44293,41 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const appearance_1 = __importDefault(__webpack_require__(/*! ../components/appearance */ "./src/components/appearance.ts"));
-const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
-const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
+const size_1 = __importDefault(__webpack_require__(/*! ../components/size */ "./src/components/size.ts"));
 const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
-const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-const ecs_1 = __webpack_require__(/*! ../ecs */ "./src/ecs/index.ts");
-const bounding_box_1 = __importDefault(__webpack_require__(/*! ../math/bounding-box */ "./src/math/bounding-box.ts"));
-exports.default = ecs_1.system([position_1.default, appearance_1.default], (entities, world) => {
-    const ball = entities.find((e) => e.has(velocity_1.default));
-    if (!ball) {
-        return;
-    }
-    const bricks = entities.filter((e) => e.has(collidable_1.default));
-    const ballRect = bounding_box_1.default(ball.get(position_1.default), ball.get(appearance_1.default));
-    bricks.forEach((brick) => {
-        const brickRect = bounding_box_1.default(brick.get(position_1.default), brick.get(appearance_1.default));
-        const c = collision(ballRect, brickRect);
-        if (c !== undefined) {
-            if (!brick.has(controlled_1.default)) {
-                world.removeEntity(brick.id);
-            }
-            switch (c) {
-                case Collision.TOP:
-                    ball.get(velocity_1.default).y *= -1;
-                    break;
-                case Collision.BOTTOM:
-                    ball.get(velocity_1.default).y *= -1;
-                    break;
-                case Collision.LEFT:
-                    ball.get(velocity_1.default).x *= -1;
-                    break;
-                case Collision.RIGHT:
-                    ball.get(velocity_1.default).x *= -1;
-                    break;
-            }
-        }
-    });
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+exports.default = ecs_1.logicSystem([position_1.default, size_1.default], (entities, world) => {
+    // const ball = entities.find((e) => e.has(Velocity));
+    // if (!ball) {
+    //   return;
+    // }
+    // const bricks = entities.filter((e) => e.has(Collidable));
+    // const ballRect = boundingBox(ball.get(Position), ball.get(Appearance));
+    // bricks.forEach((brick) => {
+    //   const brickRect = boundingBox(brick.get(Position), brick.get(Appearance));
+    //   const c = intersects(ballRect, brickRect);
+    //   if (c !== undefined) {
+    //     if (!brick.has(Controlled)) {
+    //       world.removeEntity(brick.id);
+    //     }
+    //     switch (c) {
+    //       case Collision.TOP:
+    //         ball.get(Velocity).y *= -1;
+    //         break;
+    //       case Collision.BOTTOM:
+    //         ball.get(Velocity).y *= -1;
+    //         break;
+    //       case Collision.LEFT:
+    //         ball.get(Velocity).x *= -1;
+    //         break;
+    //       case Collision.RIGHT:
+    //         ball.get(Velocity).x *= -1;
+    //         break;
+    //     }
+    //   }
+    // });
 });
-function collision(a, b) {
+function intersects(a, b) {
     const w = 0.5 * (a.width + b.width);
     const h = 0.5 * (a.height + b.height);
     const dx = a.x1 + a.width / 2 - (b.x1 + b.width / 2);
@@ -44290,16 +44380,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
 const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
-const ecs_1 = __webpack_require__(/*! ../ecs */ "./src/ecs/index.ts");
 const rotation_1 = __importDefault(__webpack_require__(/*! ../components/rotation */ "./src/components/rotation.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-exports.default = ecs_1.system([controlled_1.default, position_1.default, rotation_1.default, velocity_1.default], (entities, world) => {
+exports.default = ecs_1.logicSystem([controlled_1.default, position_1.default, rotation_1.default, velocity_1.default], (entities, world) => {
     entities.forEach((entity) => {
         const rotation = entity.get(rotation_1.default);
         const velocity = entity.get(velocity_1.default);
-        const position = entity.get(position_1.default);
         if (world.keyboard.pressed(ecs_1.Key.Left)) {
             rotation.angle = (rotation.angle - ANGLE_DELTA) % FULL_CIRCLE;
         }
@@ -44309,24 +44398,6 @@ exports.default = ecs_1.system([controlled_1.default, position_1.default, rotati
         if (world.keyboard.pressed(ecs_1.Key.Up)) {
             velocity.x += SPEED * Math.cos(rotation.angle - Math.PI / 2);
             velocity.y += SPEED * Math.sin(rotation.angle - Math.PI / 2);
-            position.x += velocity.x;
-            position.y += velocity.y;
-        }
-        const { width, height } = world.boundingBox();
-        // Black magic to make entity wrap around edges
-        position.x = ((position.x % width) + width) % width;
-        position.y = ((position.y % height) + height) % height;
-        if (Math.abs(velocity.x) < 0.01) {
-            velocity.x = 0;
-        }
-        else {
-            velocity.x *= 0.999;
-        }
-        if (Math.abs(velocity.y) < 0.01) {
-            velocity.y = 0;
-        }
-        else {
-            velocity.y *= 0.999;
         }
     });
 });
@@ -44350,17 +44421,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-const ecs_1 = __webpack_require__(/*! ../ecs */ "./src/ecs/index.ts");
-exports.default = ecs_1.system([position_1.default, velocity_1.default], (entities, world) => {
+const rect_1 = __webpack_require__(/*! ../primitives/rect */ "./src/primitives/rect.ts");
+exports.default = ecs_1.logicSystem([position_1.default, velocity_1.default], (entities, world) => {
     entities.forEach((entity) => {
         const position = entity.get(position_1.default);
         const velocity = entity.get(velocity_1.default);
+        const { width, height } = worldBox(world);
+        // Black magic to make entity wrap around edges
+        position.x = ((position.x % width) + width) % width;
+        position.y = ((position.y % height) + height) % height;
+        if (Math.abs(velocity.x) < 0.01) {
+            velocity.x = 0;
+        }
+        else {
+            velocity.x *= 0.999;
+        }
+        if (Math.abs(velocity.y) < 0.01) {
+            velocity.y = 0;
+        }
+        else {
+            velocity.y *= 0.999;
+        }
         position.x += velocity.x;
         position.y += velocity.y;
     });
 });
+function worldBox(world) {
+    const canvas = world.canvas;
+    return rect_1.rect(0, 0, canvas.width, canvas.height);
+}
 
 
 /***/ }),
@@ -44379,16 +44471,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
-const ecs_1 = __webpack_require__(/*! ../ecs */ "./src/ecs/index.ts");
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const displayable_1 = __importDefault(__webpack_require__(/*! ../components/displayable */ "./src/components/displayable.ts"));
 const rotation_1 = __importDefault(__webpack_require__(/*! ../components/rotation */ "./src/components/rotation.ts"));
-function clear(canvas, context) {
-    context.save();
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.restore();
-}
-exports.default = ecs_1.system([displayable_1.default], (entities, world) => {
+exports.default = ecs_1.renderSystem([displayable_1.default], (entities, lag, world) => {
     entities.forEach((entity) => {
         const { ref } = entity.get(displayable_1.default);
         ifHas(entity, position_1.default, (position) => {
@@ -44399,78 +44485,12 @@ exports.default = ecs_1.system([displayable_1.default], (entities, world) => {
             ref.rotation = rotation.angle;
         });
     });
-    // const { canvas, context } = world;
-    // clear(canvas, context);
-    // entities.forEach((entity) => {
-    //   const { color, shape } = entity.get(Appearance);
-    //   const position = entity.get(Position);
-    //   switch (shape.kind) {
-    //     case "circle":
-    //       drawCircle(context, color, shape.radius, position);
-    //     case "square":
-    //       drawSquare(context, color, shape.width, shape.height, position);
-    //   }
-    // });
 });
 function ifHas(entity, component, fn) {
     if (entity.has(component)) {
         fn(entity.get(component));
     }
 }
-function drawSquare(context, color, width, height, position) {
-    const { x, y } = position;
-    context.beginPath();
-    context.fillStyle = rgb(color);
-    context.strokeStyle = "rgba(0,0,0,1)";
-    context.fillRect(x, y, width, height);
-}
-function drawCircle(context, color, radius, position) {
-    const { x, y } = position;
-    context.beginPath();
-    context.fillStyle = rgb(color);
-    context.strokeStyle = "rgba(0,0,0,1)";
-    context.arc(x, y, radius, 0, 2 * Math.PI, false);
-    context.fill();
-}
-function rgb(color) {
-    return `rgb(${color.r},${color.g},${color.b})`;
-}
-
-
-/***/ }),
-
-/***/ "./src/systems/world-collision.ts":
-/*!****************************************!*\
-  !*** ./src/systems/world-collision.ts ***!
-  \****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const appearance_1 = __importDefault(__webpack_require__(/*! ../components/appearance */ "./src/components/appearance.ts"));
-const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
-const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-const ecs_1 = __webpack_require__(/*! ../ecs */ "./src/ecs/index.ts");
-const bounding_box_1 = __importDefault(__webpack_require__(/*! ../math/bounding-box */ "./src/math/bounding-box.ts"));
-exports.default = ecs_1.system([position_1.default, velocity_1.default, appearance_1.default], (entities, world) => {
-    const worldBox = world.boundingBox();
-    entities.forEach((entity) => {
-        const position = entity.get(position_1.default);
-        const velocity = entity.get(velocity_1.default);
-        const bounds = bounding_box_1.default(position, entity.get(appearance_1.default));
-        if (bounds.x1 <= worldBox.x1 || bounds.x2 >= worldBox.x2) {
-            velocity.x *= -1;
-        }
-        else if (bounds.y1 <= worldBox.y1) {
-            velocity.y *= -1;
-        }
-    });
-});
 
 
 /***/ })
