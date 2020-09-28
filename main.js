@@ -36594,26 +36594,60 @@ earcut.flatten = function (data) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Entity; });
+/**
+ * Bundles together one or more components to create a game entity
+ * Usage:
+ *
+ * ```
+ * const entity = new Entity();
+ * entity.add(new Health(20));
+ * ```
+ */
 class Entity {
+    /**
+     */
     constructor() {
         this.id = randomId();
         this.components = new Map();
     }
+    /**
+     * Add a component to this entity.
+     */
     add(component) {
         const i = component.constructor;
         this.components.set(i, component);
     }
+    /**
+     * Remove a component from this entity.
+     */
     remove(component) {
         this.components.delete(component);
     }
+    /**
+     * @param component The constructor of a component
+     * @returns true | false depending on if this entity has the specified component
+     */
     has(component) {
         return this.components.has(component);
     }
+    /**
+     * Executes the provided function if this entity has the specified component
+     *
+     * @param component The constructor of a component
+     * @param fn A function to be executed if the entity has the component
+     */
     ifHas(component, fn) {
         if (this.has(component)) {
             fn(this.get(component));
         }
     }
+    /**
+     * Returns the component instance for the specified component. Useful if you
+     * need to modify values on the component
+     *
+     * @param component The constructor of a component
+     * @returns Returns the component instance
+     */
     get(component) {
         return this.components.get(component);
     }
@@ -36638,7 +36672,7 @@ function randomId() {
 /*!****************************************!*\
   !*** ./node_modules/ecs/dist/index.js ***!
   \****************************************/
-/*! exports provided: Entity, logicSystem, renderSystem, World, Key */
+/*! exports provided: Entity, logicSystem, renderSystem, World, Key, PixiEntity, Displayable, Position, Rotation, Size */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -36657,6 +36691,26 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./keyboard */ "./node_modules/ecs/dist/keyboard.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Key", function() { return _keyboard__WEBPACK_IMPORTED_MODULE_4__["Key"]; });
+
+/* harmony import */ var _pixi_pixi_entity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pixi/pixi-entity */ "./node_modules/ecs/dist/pixi/pixi-entity.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PixiEntity", function() { return _pixi_pixi_entity__WEBPACK_IMPORTED_MODULE_5__["default"]; });
+
+/* harmony import */ var _pixi_displayable__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pixi/displayable */ "./node_modules/ecs/dist/pixi/displayable.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Displayable", function() { return _pixi_displayable__WEBPACK_IMPORTED_MODULE_6__["default"]; });
+
+/* harmony import */ var _pixi_rotation__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./pixi/rotation */ "./node_modules/ecs/dist/pixi/rotation.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rotation", function() { return _pixi_rotation__WEBPACK_IMPORTED_MODULE_7__["default"]; });
+
+/* harmony import */ var _pixi_position__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./pixi/position */ "./node_modules/ecs/dist/pixi/position.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Position", function() { return _pixi_position__WEBPACK_IMPORTED_MODULE_8__["default"]; });
+
+/* harmony import */ var _pixi_size__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./pixi/size */ "./node_modules/ecs/dist/pixi/size.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Size", function() { return _pixi_size__WEBPACK_IMPORTED_MODULE_9__["default"]; });
+
+
+
+
+
 
 
 
@@ -36679,6 +36733,9 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Key", function() { return Key; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Keyboard; });
+/**
+ * Enum used to define keyboard keys
+ */
 var Key;
 (function (Key) {
     Key["Up"] = "ArrowUp";
@@ -36695,6 +36752,16 @@ function reverseEnum(e) {
     return ret;
 }
 const reverseMapping = reverseEnum(Key);
+/**
+ * Keeps track of keyboard state, and can be asked for pressed keys
+ * Intended to be accessed through a World instance:
+ *
+ * ```
+ * if (world.keyboard.pressed(Key.Up)) {
+ *   console.log("Arrow up pressed")
+ * }
+ *```
+ */
 class Keyboard {
     constructor() {
         this.state = new Map();
@@ -36705,6 +36772,10 @@ class Keyboard {
     release(key) {
         this.state.set(key, false);
     }
+    /**
+     * @param key A key to query for state
+     * @returns true | false depending on if key is pressed
+     */
     pressed(key) {
         return this.state.get(key) || false;
     }
@@ -36722,6 +36793,25 @@ class Keyboard {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/**
+ * Initializer for a logic system. A logic system performs some kind of game logic
+ * in your game, e.g. checks for collission. A logic system is executed N times per frame
+ * depending on what you set your FPS to be. An FPS value of 60 means it is executed on average
+ * once per frame, while an FPS value of 120 will execute it twice.
+ * Usage:
+ *
+ * ```
+ * const logicSystem = logicystem(
+ *     [ComponentOne, ComponentTwo],
+ *     (entities: Entity[], world: World) => {
+ *         entities.forEach(entity => {
+ *             console.log(entity.has(ComponentOne)); // -> true
+ *             console.log(entity.has(ComponentTwo)); // -> true
+ *         });
+ *     }
+ * );
+ * ```
+ */
 const logicSystem = (filter, tick) => {
     return {
         filter,
@@ -36754,6 +36844,151 @@ function makeEntities(entities) {
 
 /***/ }),
 
+/***/ "./node_modules/ecs/dist/pixi/displayable.js":
+/*!***************************************************!*\
+  !*** ./node_modules/ecs/dist/pixi/displayable.js ***!
+  \***************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Holds a PIXI.DisplayObject instance
+ */
+class Displayable {
+    /**
+     */
+    constructor(ref) {
+        this.name = "displayable";
+        this.ref = ref;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Displayable);
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/pixi/pixi-entity.js":
+/*!***************************************************!*\
+  !*** ./node_modules/ecs/dist/pixi/pixi-entity.js ***!
+  \***************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../entity */ "./node_modules/ecs/dist/entity.js");
+/* harmony import */ var _position__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./position */ "./node_modules/ecs/dist/pixi/position.js");
+/* harmony import */ var _displayable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./displayable */ "./node_modules/ecs/dist/pixi/displayable.js");
+/* harmony import */ var _rotation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./rotation */ "./node_modules/ecs/dist/pixi/rotation.js");
+/* harmony import */ var _size__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./size */ "./node_modules/ecs/dist/pixi/size.js");
+
+
+
+
+
+/**
+ * A special entity which automatically adds the components Position,
+ * Displayable, Rotation and Size, and has the ability to add an object
+ * to a Pixi container.
+ */
+class PixiEntity extends _entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
+    /**
+     * Makes this entity a renderable entity added to a pixi container.
+     * The Displayable component should not be mutated in a logic system.
+     * Instead, mutate Position, Rotatin and Size in logic systems and copy the values into the Displayable component in a render system.
+     */
+    addDisplayObject(obj, container) {
+        container.addChild(obj);
+        this.add(new _position__WEBPACK_IMPORTED_MODULE_1__["default"](obj.x, obj.y));
+        this.add(new _displayable__WEBPACK_IMPORTED_MODULE_2__["default"](obj));
+        this.add(new _rotation__WEBPACK_IMPORTED_MODULE_3__["default"](obj.rotation));
+        this.add(new _size__WEBPACK_IMPORTED_MODULE_4__["default"](obj.width, obj.height));
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (PixiEntity);
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/pixi/position.js":
+/*!************************************************!*\
+  !*** ./node_modules/ecs/dist/pixi/position.js ***!
+  \************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Holds a position with x and y coordinates
+ */
+class Position {
+    /**
+     */
+    constructor(x, y) {
+        this.name = "position";
+        this.x = x;
+        this.y = y;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Position);
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/pixi/rotation.js":
+/*!************************************************!*\
+  !*** ./node_modules/ecs/dist/pixi/rotation.js ***!
+  \************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Holds a rotation (in radians or degrees, that’s up to you)
+ */
+class Rotation {
+    /**
+     */
+    constructor(angle = 0) {
+        this.name = "rotation";
+        this.angle = angle;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Rotation);
+
+
+/***/ }),
+
+/***/ "./node_modules/ecs/dist/pixi/size.js":
+/*!********************************************!*\
+  !*** ./node_modules/ecs/dist/pixi/size.js ***!
+  \********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Holds a size in a 2D plane (width and height)
+ */
+class Size {
+    /**
+     */
+    constructor(width, height) {
+        this.name = "size";
+        this.width = width;
+        this.height = height;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Size);
+
+
+/***/ }),
+
 /***/ "./node_modules/ecs/dist/render-system.js":
 /*!************************************************!*\
   !*** ./node_modules/ecs/dist/render-system.js ***!
@@ -36763,6 +36998,27 @@ function makeEntities(entities) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/**
+ * Initializer for a render system. A render system performs some kind of rendering
+ * in your game. Where a logic system may be run N times per game frame, a render
+ * system will always be executed exactly once, and always after every logic system.
+ * A render system should ideally not calculate stuff, only perform rendering.
+ *
+ * A render system is passed a `lag` parameter. This parameter tells how "far into"
+ * the frame you are. It is a value between 0 (start of frame) and 1 (end of frame).
+ * This can be used to compensate for the time your logic systems has spent during
+ * a frame.
+ * ```
+ * const renderSystem = renderSystem(
+ *     [Renderable],
+ *     (entities: Entity[], lag: number, world: World) {
+ *         entities.forEach(entity => {
+ *             console.log(entity.has(Renderable)); // -> true
+ *         })
+ *     }
+ * )
+ * ```
+ */
 const renderSystem = (filter, tick) => {
     return {
         filter,
@@ -36792,7 +37048,26 @@ const defaultRenderConfig = {
     fps: 60,
     debug: false,
 };
+/**
+ * A World ties everything together
+ * Usage:
+ *
+ * ```
+ * const pixi = new PIXI.Application({ width: 600, height: 400});
+ * const entityList = [list(), full(), of(), entities()]
+ * const settings = {
+ *     fps: 60,
+ *     debug: false
+ * }
+ * const world = new World(pixi.view, entityList, [myUpdateSystem], [myRenderSystem], settings);
+ * world.start()
+ * ```
+ *
+ */
 class World {
+    /**
+     * Main constructor
+     */
     constructor(canvas, entities, logicSystems, renderSystems, renderConfig = defaultRenderConfig) {
         this.canvas = canvas;
         this.context = canvas.getContext("2d");
@@ -36812,6 +37087,9 @@ class World {
         this.createMouseListener();
         this.createKeyboardListener();
     }
+    /**
+     * Adds an entity to an already instantiated world. Updates system filters.
+     */
     add(entity) {
         this.entities.forEach((entities, filter) => {
             if (matches(entity, filter)) {
@@ -36819,11 +37097,17 @@ class World {
             }
         });
     }
+    /**
+     * Removes an entity from an already instantiated world.
+     */
     removeEntity(id) {
         this.entities.forEach((value) => {
             value.delete(id);
         });
     }
+    /**
+     * Starts the game loop. Runs until stopped.
+     */
     start() {
         log(this.debug, "Starting rendering", this.renderState);
         this.tick();
@@ -43948,92 +44232,6 @@ exports.default = Controlled;
 
 /***/ }),
 
-/***/ "./src/components/displayable.ts":
-/*!***************************************!*\
-  !*** ./src/components/displayable.ts ***!
-  \***************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class Displayable {
-    constructor(ref) {
-        this.name = "displayable";
-        this.ref = ref;
-    }
-}
-exports.default = Displayable;
-
-
-/***/ }),
-
-/***/ "./src/components/position.ts":
-/*!************************************!*\
-  !*** ./src/components/position.ts ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class Position {
-    constructor(x, y) {
-        this.name = "position";
-        this.x = x;
-        this.y = y;
-    }
-}
-exports.default = Position;
-
-
-/***/ }),
-
-/***/ "./src/components/rotation.ts":
-/*!************************************!*\
-  !*** ./src/components/rotation.ts ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class Rotation {
-    constructor(angle = 0) {
-        this.name = "rotation";
-        this.angle = angle;
-    }
-}
-exports.default = Rotation;
-
-
-/***/ }),
-
-/***/ "./src/components/size.ts":
-/*!********************************!*\
-  !*** ./src/components/size.ts ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-class Size {
-    constructor(width, height) {
-        this.name = "size";
-        this.width = width;
-        this.height = height;
-    }
-}
-exports.default = Size;
-
-
-/***/ }),
-
 /***/ "./src/components/velocity.ts":
 /*!************************************!*\
   !*** ./src/components/velocity.ts ***!
@@ -44092,10 +44290,8 @@ exports.mkBrick = exports.mkBall = exports.mkPaddle = exports.wall = exports.pla
 const appearance_1 = __importDefault(__webpack_require__(/*! ./components/appearance */ "./src/components/appearance.ts"));
 const collidable_1 = __importDefault(__webpack_require__(/*! ./components/collidable */ "./src/components/collidable.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ./components/controlled */ "./src/components/controlled.ts"));
-const position_1 = __importDefault(__webpack_require__(/*! ./components/position */ "./src/components/position.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ./components/velocity */ "./src/components/velocity.ts"));
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const pixi_entity_1 = __importDefault(__webpack_require__(/*! ./pixi-ecs/pixi-entity */ "./src/pixi-ecs/pixi-entity.ts"));
 const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
 const grey = { r: 100, g: 100, b: 100 };
 const red = { r: 250, g: 0, b: 0 };
@@ -44108,7 +44304,7 @@ function player(x, y, stage) {
     g.drawPolygon(path);
     g.x = x;
     g.y = y;
-    const player = new pixi_entity_1.default();
+    const player = new ecs_1.PixiEntity();
     player.addDisplayObject(g, stage);
     player.add(new collidable_1.default());
     player.add(new controlled_1.default());
@@ -44123,7 +44319,7 @@ function wall(width, height, stage) {
     g.drawPolygon(path);
     g.x = (width / 3) * 2;
     g.y = (height / 3) * 2;
-    const wall = new pixi_entity_1.default();
+    const wall = new ecs_1.PixiEntity();
     wall.addDisplayObject(g, stage);
     wall.add(new collidable_1.default());
     return wall;
@@ -44134,7 +44330,7 @@ function mkPaddle(stage) {
     g.beginFill(0xcecece);
     g.drawRect(100, 100, 150, 15);
     g.endFill();
-    const player = new pixi_entity_1.default();
+    const player = new ecs_1.PixiEntity();
     player.addDisplayObject(g, stage);
     // player.add(new Position(100, 550));
     // player.add(new Appearance(grey, { kind: "square", width: 150, height: 15 }));
@@ -44145,7 +44341,7 @@ function mkPaddle(stage) {
 exports.mkPaddle = mkPaddle;
 function mkBall() {
     const ball = new ecs_1.Entity();
-    ball.add(new position_1.default(400, 300));
+    ball.add(new ecs_1.Position(400, 300));
     ball.add(new appearance_1.default(black, { kind: "circle", radius: 8 }));
     ball.add(new velocity_1.default(3.5, 3.5));
     return ball;
@@ -44153,7 +44349,7 @@ function mkBall() {
 exports.mkBall = mkBall;
 function mkBrick(x, y, width, height) {
     const brick = new ecs_1.Entity();
-    brick.add(new position_1.default(x, y));
+    brick.add(new ecs_1.Position(x, y));
     brick.add(new appearance_1.default(red, { kind: "square", width: width, height: height }));
     brick.add(new collidable_1.default());
     return brick;
@@ -44222,38 +44418,6 @@ world.start();
 
 /***/ }),
 
-/***/ "./src/pixi-ecs/pixi-entity.ts":
-/*!*************************************!*\
-  !*** ./src/pixi-ecs/pixi-entity.ts ***!
-  \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
-const displayable_1 = __importDefault(__webpack_require__(/*! ../components/displayable */ "./src/components/displayable.ts"));
-const rotation_1 = __importDefault(__webpack_require__(/*! ../components/rotation */ "./src/components/rotation.ts"));
-const size_1 = __importDefault(__webpack_require__(/*! ../components/size */ "./src/components/size.ts"));
-class PixiEntity extends ecs_1.Entity {
-    addDisplayObject(obj, container) {
-        container.addChild(obj);
-        this.add(new position_1.default(obj.x, obj.y));
-        this.add(new displayable_1.default(obj));
-        this.add(new rotation_1.default(obj.rotation));
-        this.add(new size_1.default(obj.width, obj.height));
-    }
-}
-exports.default = PixiEntity;
-
-
-/***/ }),
-
 /***/ "./src/primitives/rect.ts":
 /*!********************************!*\
   !*** ./src/primitives/rect.ts ***!
@@ -44289,14 +44453,9 @@ exports.rect = rect;
 
 "use strict";
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const size_1 = __importDefault(__webpack_require__(/*! ../components/size */ "./src/components/size.ts"));
-const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-exports.default = ecs_1.logicSystem([position_1.default, size_1.default], (entities, world) => {
+exports.default = ecs_1.logicSystem([ecs_1.Position, ecs_1.Size], (entities, world) => {
     // const ball = entities.find((e) => e.has(Velocity));
     // if (!ball) {
     //   return;
@@ -44382,12 +44541,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
-const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
-const rotation_1 = __importDefault(__webpack_require__(/*! ../components/rotation */ "./src/components/rotation.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-exports.default = ecs_1.logicSystem([controlled_1.default, position_1.default, rotation_1.default, velocity_1.default], (entities, world) => {
+exports.default = ecs_1.logicSystem([controlled_1.default, ecs_1.Position, ecs_1.Rotation, velocity_1.default], (entities, world) => {
     entities.forEach((entity) => {
-        const rotation = entity.get(rotation_1.default);
+        const rotation = entity.get(ecs_1.Rotation);
         const velocity = entity.get(velocity_1.default);
         if (world.keyboard.pressed(ecs_1.Key.Left)) {
             rotation.angle = (rotation.angle - ANGLE_DELTA) % FULL_CIRCLE;
@@ -44422,12 +44579,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
 const rect_1 = __webpack_require__(/*! ../primitives/rect */ "./src/primitives/rect.ts");
-exports.default = ecs_1.logicSystem([position_1.default, velocity_1.default], (entities, world) => {
+exports.default = ecs_1.logicSystem([ecs_1.Position, velocity_1.default], (entities, world) => {
     entities.forEach((entity) => {
-        const position = entity.get(position_1.default);
+        const position = entity.get(ecs_1.Position);
         const velocity = entity.get(velocity_1.default);
         const { width, height } = worldBox(world);
         // Black magic to make entity wrap around edges
@@ -44466,22 +44622,16 @@ function worldBox(world) {
 
 "use strict";
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const position_1 = __importDefault(__webpack_require__(/*! ../components/position */ "./src/components/position.ts"));
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const displayable_1 = __importDefault(__webpack_require__(/*! ../components/displayable */ "./src/components/displayable.ts"));
-const rotation_1 = __importDefault(__webpack_require__(/*! ../components/rotation */ "./src/components/rotation.ts"));
-exports.default = ecs_1.renderSystem([displayable_1.default], (entities, lag, world) => {
+exports.default = ecs_1.renderSystem([ecs_1.Displayable], (entities, lag, world) => {
     entities.forEach((entity) => {
-        const { ref } = entity.get(displayable_1.default);
-        ifHas(entity, position_1.default, (position) => {
+        const { ref } = entity.get(ecs_1.Displayable);
+        ifHas(entity, ecs_1.Position, (position) => {
             ref.x = position.x;
             ref.y = position.y;
         });
-        ifHas(entity, rotation_1.default, (rotation) => {
+        ifHas(entity, ecs_1.Rotation, (rotation) => {
             ref.rotation = rotation.angle;
         });
     });
