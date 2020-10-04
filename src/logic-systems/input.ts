@@ -1,21 +1,25 @@
-import { Entity, Key, logicSystem, World, Position, Rotation } from "ecs";
+import { Entity, Key, logicSystem, Rotation, World } from "ecs";
+import Alive from "../components/alive";
 import Controlled from "../components/controlled";
 import Velocity from "../components/velocity";
 
 export default logicSystem(
-  [Controlled, Position, Rotation, Velocity],
-  (entities: Entity[], world: World) => {
-    entities.forEach((entity) => {
+  { players: [Controlled, Rotation, Velocity, Alive] },
+  (entities, world) => {
+    entities.players.forEach((entity) => {
       const rotation = entity.get(Rotation);
       const velocity = entity.get(Velocity);
+      const controls = entity.get(Controlled);
 
-      if (world.keyboard.pressed(Key.Left)) {
+      if (world.keyboard.pressed(controls.left)) {
         rotation.angle = (rotation.angle - ANGLE_DELTA) % FULL_CIRCLE;
       }
-      if (world.keyboard.pressed(Key.Right)) {
+
+      if (world.keyboard.pressed(controls.right)) {
         rotation.angle = (rotation.angle + ANGLE_DELTA) % FULL_CIRCLE;
       }
-      if (world.keyboard.pressed(Key.Up)) {
+
+      if (world.keyboard.pressed(controls.forward)) {
         velocity.x += SPEED * Math.cos(rotation.angle - Math.PI / 2);
         velocity.y += SPEED * Math.sin(rotation.angle - Math.PI / 2);
       }

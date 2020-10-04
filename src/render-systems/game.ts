@@ -11,28 +11,19 @@ import {
 import Velocity from "../components/velocity";
 
 export default renderSystem(
-  [Displayable],
-  (entities: Entity[], lag: number, world: World) => {
-    entities.forEach((entity) => {
+  { displayables: [Displayable] },
+  (entities, lag, world) => {
+    entities.displayables.forEach((entity) => {
       const { ref } = entity.get(Displayable);
-      ifHas(entity, Position, (position) => {
+
+      entity.ifHas(Position, (position) => {
         ref.x = position.x;
         ref.y = position.y;
       });
 
-      ifHas(entity, Rotation, (rotation) => {
+      entity.ifHas(Rotation, (rotation) => {
         ref.rotation = rotation.angle;
       });
     });
   }
 );
-
-function ifHas<C extends Component>(
-  entity: Entity,
-  component: new (...args: any) => C,
-  fn: (component: C) => void
-) {
-  if (entity.has(component)) {
-    fn(entity.get(component));
-  }
-}

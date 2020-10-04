@@ -1,11 +1,15 @@
-import { Component } from "ecs";
+import { Component, Key } from "ecs";
 
 class Controlled implements Component {
   name = "controlled";
-  controlled: true;
+  forward: Key;
+  left: Key;
+  right: Key;
 
-  constructor() {
-    this.controlled = true;
+  constructor(forward: Key, left: Key, right: Key) {
+    this.forward = forward;
+    this.left = left;
+    this.right = right;
   }
 }
 

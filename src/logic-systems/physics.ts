@@ -3,9 +3,9 @@ import Velocity from "../components/velocity";
 import { Rect, rect } from "../primitives/rect";
 
 export default logicSystem(
-  [Position, Velocity],
-  (entities: Entity[], world: World) => {
-    entities.forEach((entity) => {
+  { movables: [Position, Velocity] },
+  (entities, world) => {
+    entities.movables.forEach((entity) => {
       const position = entity.get(Position);
       const velocity = entity.get(Velocity);
       const { width, height } = worldBox(world);
