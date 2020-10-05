@@ -36616,12 +36616,20 @@ class Entity {
     add(component) {
         const i = component.constructor;
         this.components.set(i, component);
+        if (this.world) {
+            this.world.removeEntity(this.id);
+            this.world.addEntity(this);
+        }
     }
     /**
      * Remove a component from this entity.
      */
     remove(component) {
         this.components.delete(component);
+        if (this.world) {
+            this.world.removeEntity(this.id);
+            this.world.addEntity(this);
+        }
     }
     /**
      * @param component The constructor of a component
@@ -36651,6 +36659,9 @@ class Entity {
     get(component) {
         return this.components.get(component);
     }
+    register(world) {
+        this.world = world;
+    }
     print() {
         const components = [...this.components];
         console.log(JSON.stringify({ id: this.id, components }, null, 4));
@@ -36668,11 +36679,35 @@ function randomId() {
 
 /***/ }),
 
+/***/ "./node_modules/ecs/dist/events/mouse-click.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/ecs/dist/events/mouse-click.js ***!
+  \*****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * A component used to store mouse coordinates in case of mouse click
+ */
+class MouseClick {
+    constructor(x, y) {
+        this.name = "mouse-click";
+        this.x = x;
+        this.y = y;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (MouseClick);
+
+
+/***/ }),
+
 /***/ "./node_modules/ecs/dist/index.js":
 /*!****************************************!*\
   !*** ./node_modules/ecs/dist/index.js ***!
   \****************************************/
-/*! exports provided: Entity, logicSystem, renderSystem, World, Key, PixiEntity, Displayable, Position, Rotation, Size */
+/*! exports provided: Entity, logicSystem, renderSystem, World, Key, PixiEntity, Displayable, Position, Rotation, Size, MouseClick */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -36706,6 +36741,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _pixi_size__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./pixi/size */ "./node_modules/ecs/dist/pixi/size.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Size", function() { return _pixi_size__WEBPACK_IMPORTED_MODULE_9__["default"]; });
+
+/* harmony import */ var _events_mouse_click__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./events/mouse-click */ "./node_modules/ecs/dist/events/mouse-click.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MouseClick", function() { return _events_mouse_click__WEBPACK_IMPORTED_MODULE_10__["default"]; });
+
 
 
 
@@ -36742,6 +36781,52 @@ var Key;
     Key["Down"] = "ArrowDown";
     Key["Left"] = "ArrowLeft";
     Key["Right"] = "ArrowRight";
+    Key["Escape"] = "Escape";
+    Key["Enter"] = "Enter";
+    Key["Space"] = " ";
+    Key["A"] = "a";
+    Key["B"] = "b";
+    Key["C"] = "c";
+    Key["D"] = "d";
+    Key["E"] = "e";
+    Key["F"] = "f";
+    Key["G"] = "g";
+    Key["H"] = "h";
+    Key["I"] = "i";
+    Key["J"] = "j";
+    Key["K"] = "k";
+    Key["L"] = "l";
+    Key["M"] = "m";
+    Key["N"] = "n";
+    Key["O"] = "o";
+    Key["P"] = "p";
+    Key["Q"] = "q";
+    Key["R"] = "r";
+    Key["S"] = "s";
+    Key["T"] = "t";
+    Key["U"] = "u";
+    Key["V"] = "v";
+    Key["W"] = "w";
+    Key["X"] = "x";
+    Key["Y"] = "y";
+    Key["Z"] = "z";
+    Key["\u00C6"] = "\u00E6";
+    Key["\u00D8"] = "\u00F8";
+    Key["\u00C5"] = "\u00E5";
+    Key["COMMA"] = ",";
+    Key["PERIOD"] = ".";
+    Key["ONE"] = "1";
+    Key["TWO"] = "2";
+    Key["THREE"] = "3";
+    Key["FOUR"] = "4";
+    Key["FIVE"] = "5";
+    Key["SIX"] = "6";
+    Key["SEVEN"] = "7";
+    Key["EIGHT"] = "8";
+    Key["NINE"] = "9";
+    Key["ZERO"] = "0";
+    Key["PLUS"] = "+";
+    Key["MINUS"] = "-";
 })(Key || (Key = {}));
 function reverseEnum(e) {
     const ret = {};
@@ -36802,9 +36887,9 @@ __webpack_require__.r(__webpack_exports__);
  *
  * ```
  * const logicSystem = logicystem(
- *     [ComponentOne, ComponentTwo],
- *     (entities: Entity[], world: World) => {
- *         entities.forEach(entity => {
+ *     { myEntities: [ComponentOne, ComponentTwo] },
+ *     (entities: Record<string, Entity[]>, world: World) => {
+ *         entities.myEntities.forEach(entity => {
  *             console.log(entity.has(ComponentOne)); // -> true
  *             console.log(entity.has(ComponentTwo)); // -> true
  *         });
@@ -36812,12 +36897,12 @@ __webpack_require__.r(__webpack_exports__);
  * );
  * ```
  */
-const logicSystem = (filter, tick) => {
+function logicSystem(filter, tick) {
     return {
         filter,
         tick,
     };
-};
+}
 /* harmony default export */ __webpack_exports__["default"] = (logicSystem);
 
 
@@ -37010,21 +37095,21 @@ __webpack_require__.r(__webpack_exports__);
  * a frame.
  * ```
  * const renderSystem = renderSystem(
- *     [Renderable],
- *     (entities: Entity[], lag: number, world: World) {
- *         entities.forEach(entity => {
+ *     { renderable: [Renderable] },
+ *     (entities: Record<string, Entity[]>, lag: number, world: World) {
+ *         entities.renderable.forEach(entity => {
  *             console.log(entity.has(Renderable)); // -> true
  *         })
  *     }
  * )
  * ```
  */
-const renderSystem = (filter, tick) => {
+function renderSystem(filter, tick) {
     return {
         filter,
         tick,
     };
-};
+}
 /* harmony default export */ __webpack_exports__["default"] = (renderSystem);
 
 
@@ -37040,8 +37125,12 @@ const renderSystem = (filter, tick) => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return World; });
-/* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./keyboard */ "./node_modules/ecs/dist/keyboard.js");
-/* harmony import */ var _make_entities__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./make-entities */ "./node_modules/ecs/dist/make-entities.js");
+/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entity */ "./node_modules/ecs/dist/entity.js");
+/* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keyboard */ "./node_modules/ecs/dist/keyboard.js");
+/* harmony import */ var _make_entities__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./make-entities */ "./node_modules/ecs/dist/make-entities.js");
+/* harmony import */ var _events_mouse_click__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./events/mouse-click */ "./node_modules/ecs/dist/events/mouse-click.js");
+
+
 
 
 const defaultRenderConfig = {
@@ -37071,11 +37160,11 @@ class World {
     constructor(canvas, entities, logicSystems, renderSystems, renderConfig = defaultRenderConfig) {
         this.canvas = canvas;
         this.context = canvas.getContext("2d");
-        this.mouse = { x: -100, y: -100 };
+        this.mouse = { x: -100, y: -100, pressed: false };
         this.logicSystems = logicSystems;
         this.renderSystems = renderSystems;
         this.entities = new Map();
-        this.keyboard = new _keyboard__WEBPACK_IMPORTED_MODULE_0__["default"]();
+        this.keyboard = new _keyboard__WEBPACK_IMPORTED_MODULE_1__["default"]();
         this.renderState = {
             fps: renderConfig.fps,
             previous: 0,
@@ -37083,14 +37172,18 @@ class World {
             lag: 0,
         };
         this.debug = renderConfig.debug;
-        this.createEntityMapping(Object(_make_entities__WEBPACK_IMPORTED_MODULE_1__["makeEntities"])(entities));
+        entities.forEach((entity) => {
+            entity.register(this);
+        });
+        this.createEntityMapping(Object(_make_entities__WEBPACK_IMPORTED_MODULE_2__["makeEntities"])(entities));
         this.createMouseListener();
         this.createKeyboardListener();
     }
     /**
      * Adds an entity to an already instantiated world. Updates system filters.
      */
-    add(entity) {
+    addEntity(entity) {
+        entity.register(this);
         this.entities.forEach((entities, filter) => {
             if (matches(entity, filter)) {
                 entities.set(entity.id, entity);
@@ -37130,7 +37223,13 @@ class World {
         while (this.renderState.lag >= this.renderState.frameDuration) {
             count += 1;
             this.logicSystems.forEach((system) => {
-                const entities = Array.from(this.entities.get(system.filter).values());
+                const entities = Object.entries(system.filter).reduce((acc, cur) => {
+                    const key = cur[0];
+                    const filters = cur[1];
+                    const entities = Array.from(this.entities.get(filters).values());
+                    acc[key] = entities;
+                    return acc;
+                }, {});
                 return system.tick(entities, this);
             });
             this.renderState.lag -= this.renderState.frameDuration;
@@ -37138,26 +37237,42 @@ class World {
         log(this.debug, "Update ran", count, "times");
         const lagOffset = this.renderState.lag / this.renderState.frameDuration;
         this.renderSystems.forEach((system) => {
-            const entities = Array.from(this.entities.get(system.filter).values());
+            const entities = Object.entries(system.filter).reduce((acc, cur) => {
+                const key = cur[0];
+                const filters = cur[1];
+                const entities = Array.from(this.entities.get(filters).values());
+                acc[key] = entities;
+                return acc;
+            }, {});
             return system.tick(entities, lagOffset, this);
         });
         this.renderState.previous = timestamp;
         requestAnimationFrame((n) => this.tick(n));
     }
     createEntityMapping(entities) {
+        log(this.debug, "Mapping logic systems");
         this.logicSystems.forEach((system) => {
-            const entityMap = new Map();
-            filterEntities(entities, system.filter).forEach((entity) => {
-                entityMap.set(entity.id, entity);
+            log(this.debug, "Creating mapping for system");
+            Object.entries(system.filter).forEach(([key, filter]) => {
+                log(this.debug, `Mapping for ${key}`);
+                const entityMap = new Map();
+                filterEntities(entities, filter).forEach((entity) => {
+                    entityMap.set(entity.id, entity);
+                });
+                this.entities.set(filter, entityMap);
             });
-            this.entities.set(system.filter, entityMap);
         });
+        log(this.debug, "Mapping render systems");
         this.renderSystems.forEach((system) => {
-            const entityMap = new Map();
-            filterEntities(entities, system.filter).forEach((entity) => {
-                entityMap.set(entity.id, entity);
+            log(this.debug, "Creating mapping for system");
+            Object.entries(system.filter).forEach(([key, filter]) => {
+                log(this.debug, `Mapping for ${key}`);
+                const entityMap = new Map();
+                filterEntities(entities, filter).forEach((entity) => {
+                    entityMap.set(entity.id, entity);
+                });
+                this.entities.set(filter, entityMap);
             });
-            this.entities.set(system.filter, entityMap);
         });
     }
     createMouseListener() {
@@ -37165,6 +37280,17 @@ class World {
         this.canvas.addEventListener("mousemove", (ev) => {
             this.mouse.x = ev.clientX - canvasRect.left;
             this.mouse.y = ev.clientY - canvasRect.top;
+        });
+        this.canvas.addEventListener("mousedown", () => {
+            this.mouse.pressed = true;
+        });
+        this.canvas.addEventListener("mouseup", () => {
+            this.mouse.pressed = false;
+        });
+        this.canvas.addEventListener("click", () => {
+            const e = new _entity__WEBPACK_IMPORTED_MODULE_0__["default"]();
+            e.add(new _events_mouse_click__WEBPACK_IMPORTED_MODULE_3__["default"](this.mouse.x, this.mouse.y));
+            this.addEntity(e);
         });
     }
     createKeyboardListener() {
@@ -37195,7 +37321,7 @@ function log(debug, ...msg) {
                 return String(m);
             }
         });
-        console.log.apply(undefined, messages);
+        console.log.call(null, messages);
     }
 }
 
@@ -44168,24 +44294,43 @@ module.exports = function(module) {
 
 /***/ }),
 
-/***/ "./src/components/appearance.ts":
-/*!**************************************!*\
-  !*** ./src/components/appearance.ts ***!
-  \**************************************/
+/***/ "./src/components/alive.ts":
+/*!*********************************!*\
+  !*** ./src/components/alive.ts ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-class Appearance {
-    constructor(color, shape) {
-        this.name = "appearance";
-        this.color = color;
-        this.shape = shape;
+class Alive {
+    constructor() {
+        this.name = "alive";
     }
 }
-exports.default = Appearance;
+exports.default = Alive;
+
+
+/***/ }),
+
+/***/ "./src/components/clickable.ts":
+/*!*************************************!*\
+  !*** ./src/components/clickable.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class Clickable {
+    constructor(onClick) {
+        this.name = "clickable";
+        this.onClick = onClick;
+    }
+}
+exports.default = Clickable;
 
 
 /***/ }),
@@ -44222,12 +44367,34 @@ exports.default = Collidable;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 class Controlled {
-    constructor() {
+    constructor(forward, left, right) {
         this.name = "controlled";
-        this.controlled = true;
+        this.forward = forward;
+        this.left = left;
+        this.right = right;
     }
 }
 exports.default = Controlled;
+
+
+/***/ }),
+
+/***/ "./src/components/events/start-game.ts":
+/*!*********************************************!*\
+  !*** ./src/components/events/start-game.ts ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class StartGame {
+    constructor() {
+        this.name = "start-game";
+    }
+}
+exports.default = StartGame;
 
 
 /***/ }),
@@ -44254,111 +44421,6 @@ exports.default = Velocity;
 
 /***/ }),
 
-/***/ "./src/entity-creator.ts":
-/*!*******************************!*\
-  !*** ./src/entity-creator.ts ***!
-  \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.mkBrick = exports.mkBall = exports.mkPaddle = exports.wall = exports.player = void 0;
-const appearance_1 = __importDefault(__webpack_require__(/*! ./components/appearance */ "./src/components/appearance.ts"));
-const collidable_1 = __importDefault(__webpack_require__(/*! ./components/collidable */ "./src/components/collidable.ts"));
-const controlled_1 = __importDefault(__webpack_require__(/*! ./components/controlled */ "./src/components/controlled.ts"));
-const velocity_1 = __importDefault(__webpack_require__(/*! ./components/velocity */ "./src/components/velocity.ts"));
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
-const grey = { r: 100, g: 100, b: 100 };
-const red = { r: 250, g: 0, b: 0 };
-const black = { r: 0, g: 0, b: 0 };
-function player(x, y, stage) {
-    const path = [0, 32, 12.5, 0, 25, 32, 12.5, 25];
-    const g = new PIXI.Graphics();
-    g.pivot.set(16, 12.5);
-    g.lineStyle(3, 0xcecece, 1);
-    g.drawPolygon(path);
-    g.x = x;
-    g.y = y;
-    const player = new ecs_1.PixiEntity();
-    player.addDisplayObject(g, stage);
-    player.add(new collidable_1.default());
-    player.add(new controlled_1.default());
-    player.add(new velocity_1.default(0, 0));
-    return player;
-}
-exports.player = player;
-function wall(width, height, stage) {
-    const path = [0, 0, 0, 100];
-    const g = new PIXI.Graphics();
-    g.lineStyle(3, 0xcecece, 1);
-    g.drawPolygon(path);
-    g.x = (width / 3) * 2;
-    g.y = (height / 3) * 2;
-    const wall = new ecs_1.PixiEntity();
-    wall.addDisplayObject(g, stage);
-    wall.add(new collidable_1.default());
-    return wall;
-}
-exports.wall = wall;
-function mkPaddle(stage) {
-    const g = new PIXI.Graphics();
-    g.beginFill(0xcecece);
-    g.drawRect(100, 100, 150, 15);
-    g.endFill();
-    const player = new ecs_1.PixiEntity();
-    player.addDisplayObject(g, stage);
-    // player.add(new Position(100, 550));
-    // player.add(new Appearance(grey, { kind: "square", width: 150, height: 15 }));
-    player.add(new collidable_1.default());
-    player.add(new controlled_1.default());
-    return player;
-}
-exports.mkPaddle = mkPaddle;
-function mkBall() {
-    const ball = new ecs_1.Entity();
-    ball.add(new ecs_1.Position(400, 300));
-    ball.add(new appearance_1.default(black, { kind: "circle", radius: 8 }));
-    ball.add(new velocity_1.default(3.5, 3.5));
-    return ball;
-}
-exports.mkBall = mkBall;
-function mkBrick(x, y, width, height) {
-    const brick = new ecs_1.Entity();
-    brick.add(new ecs_1.Position(x, y));
-    brick.add(new appearance_1.default(red, { kind: "square", width: width, height: height }));
-    brick.add(new collidable_1.default());
-    return brick;
-}
-exports.mkBrick = mkBrick;
-
-
-/***/ }),
-
 /***/ "./src/index.ts":
 /*!**********************!*\
   !*** ./src/index.ts ***!
@@ -44368,168 +44430,40 @@ exports.mkBrick = mkBrick;
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const entity_creator_1 = __webpack_require__(/*! ./entity-creator */ "./src/entity-creator.ts");
-const collision_1 = __importDefault(__webpack_require__(/*! ./systems/collision */ "./src/systems/collision.ts"));
-const input_1 = __importDefault(__webpack_require__(/*! ./systems/input */ "./src/systems/input.ts"));
-const physics_1 = __importDefault(__webpack_require__(/*! ./systems/physics */ "./src/systems/physics.ts"));
-const render_1 = __importDefault(__webpack_require__(/*! ./systems/render */ "./src/systems/render.ts"));
-const pixi = new PIXI.Application({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    resolution: 1,
-    antialias: false,
-});
-pixi.view.style.display = "block";
+const collision_1 = __importDefault(__webpack_require__(/*! ./logic-systems/collision */ "./src/logic-systems/collision.ts"));
+const input_1 = __importDefault(__webpack_require__(/*! ./logic-systems/input */ "./src/logic-systems/input.ts"));
+const physics_1 = __importDefault(__webpack_require__(/*! ./logic-systems/physics */ "./src/logic-systems/physics.ts"));
+const app_1 = __importDefault(__webpack_require__(/*! ./pixi/app */ "./src/pixi/app.ts"));
+const game_scene_1 = __importDefault(__webpack_require__(/*! ./pixi/game-scene */ "./src/pixi/game-scene.ts"));
+const menu_scene_1 = __importDefault(__webpack_require__(/*! ./pixi/menu-scene */ "./src/pixi/menu-scene.ts"));
+const game_1 = __importDefault(__webpack_require__(/*! ./render-systems/game */ "./src/render-systems/game.ts"));
+const mouse_listener_1 = __importDefault(__webpack_require__(/*! ./logic-systems/mouse-listener */ "./src/logic-systems/mouse-listener.ts"));
+const start_game_1 = __importDefault(__webpack_require__(/*! ./logic-systems/start-game */ "./src/logic-systems/start-game.ts"));
+const pixi = app_1.default();
 document.body.style.margin = "0px";
 document.body.style.padding = "0px";
 document.body.appendChild(pixi.view);
-const entities = [
-    entity_creator_1.player(window.innerWidth / 2, window.innerHeight / 2, pixi.stage),
-    entity_creator_1.wall(window.innerWidth, window.innerHeight, pixi.stage),
-];
-const world = new ecs_1.World(pixi.view, entities, [input_1.default, physics_1.default, collision_1.default], [render_1.default], { fps: 60, debug: false });
+const [gameScene, gameEntities] = game_scene_1.default();
+const [menuScene, menuEntities] = menu_scene_1.default();
+pixi.stage.addChild(gameScene);
+pixi.stage.addChild(menuScene);
+menuScene.visible = true;
+const entities = gameEntities.concat(menuEntities);
+const world = new ecs_1.World(pixi.view, entities, [mouse_listener_1.default, start_game_1.default, input_1.default, physics_1.default, collision_1.default], [game_1.default], { fps: 60, debug: false });
 world.start();
 
 
 /***/ }),
 
-/***/ "./src/primitives/rect.ts":
-/*!********************************!*\
-  !*** ./src/primitives/rect.ts ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.rect = void 0;
-function rect(x1, y1, x2, y2) {
-    return {
-        x1,
-        y1,
-        x2,
-        y2,
-        width: x2 - x1,
-        height: y2 - y1,
-    };
-}
-exports.rect = rect;
-
-
-/***/ }),
-
-/***/ "./src/systems/collision.ts":
-/*!**********************************!*\
-  !*** ./src/systems/collision.ts ***!
-  \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-exports.default = ecs_1.logicSystem([ecs_1.Position, ecs_1.Size], (entities, world) => {
-    // const ball = entities.find((e) => e.has(Velocity));
-    // if (!ball) {
-    //   return;
-    // }
-    // const bricks = entities.filter((e) => e.has(Collidable));
-    // const ballRect = boundingBox(ball.get(Position), ball.get(Appearance));
-    // bricks.forEach((brick) => {
-    //   const brickRect = boundingBox(brick.get(Position), brick.get(Appearance));
-    //   const c = intersects(ballRect, brickRect);
-    //   if (c !== undefined) {
-    //     if (!brick.has(Controlled)) {
-    //       world.removeEntity(brick.id);
-    //     }
-    //     switch (c) {
-    //       case Collision.TOP:
-    //         ball.get(Velocity).y *= -1;
-    //         break;
-    //       case Collision.BOTTOM:
-    //         ball.get(Velocity).y *= -1;
-    //         break;
-    //       case Collision.LEFT:
-    //         ball.get(Velocity).x *= -1;
-    //         break;
-    //       case Collision.RIGHT:
-    //         ball.get(Velocity).x *= -1;
-    //         break;
-    //     }
-    //   }
-    // });
-});
-function intersects(a, b) {
-    const w = 0.5 * (a.width + b.width);
-    const h = 0.5 * (a.height + b.height);
-    const dx = a.x1 + a.width / 2 - (b.x1 + b.width / 2);
-    const dy = a.y1 + a.height / 2 - (b.y1 + b.height / 2);
-    if (Math.abs(dx) <= w && Math.abs(dy) <= h) {
-        const wy = w * dy;
-        const hx = h * dx;
-        if (wy > hx) {
-            if (wy > -hx) {
-                return Collision.TOP;
-            }
-            else {
-                return Collision.LEFT;
-            }
-        }
-        else {
-            if (wy > -hx) {
-                return Collision.RIGHT;
-            }
-            else {
-                return Collision.BOTTOM;
-            }
-        }
-    }
-    else {
-        return undefined;
-    }
-}
-var Collision;
-(function (Collision) {
-    Collision[Collision["TOP"] = 0] = "TOP";
-    Collision[Collision["BOTTOM"] = 1] = "BOTTOM";
-    Collision[Collision["LEFT"] = 2] = "LEFT";
-    Collision[Collision["RIGHT"] = 3] = "RIGHT";
-})(Collision || (Collision = {}));
-
-
-/***/ }),
-
-/***/ "./src/systems/input.ts":
-/*!******************************!*\
-  !*** ./src/systems/input.ts ***!
-  \******************************/
+/***/ "./src/logic-systems/collision.ts":
+/*!****************************************!*\
+  !*** ./src/logic-systems/collision.ts ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44540,19 +44474,60 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const bounding_box_1 = __importDefault(__webpack_require__(/*! ../math/bounding-box */ "./src/math/bounding-box.ts"));
+const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
+const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
+const intersection_1 = __importDefault(__webpack_require__(/*! ../math/intersection */ "./src/math/intersection.ts"));
+const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
+exports.default = ecs_1.logicSystem({
+    player: [ecs_1.Position, ecs_1.Size, controlled_1.default],
+    objs: [ecs_1.Position, ecs_1.Size, collidable_1.default],
+}, (entities, world) => {
+    const player = entities.player[0];
+    if (player == null) {
+        return;
+    }
+    const playerRect = bounding_box_1.default(player.get(ecs_1.Position), player.get(ecs_1.Size));
+    entities.objs.forEach((obj) => {
+        const objRect = bounding_box_1.default(obj.get(ecs_1.Position), obj.get(ecs_1.Size));
+        if (intersection_1.default(objRect, playerRect)) {
+            player.remove(alive_1.default);
+        }
+    });
+});
+
+
+/***/ }),
+
+/***/ "./src/logic-systems/input.ts":
+/*!************************************!*\
+  !*** ./src/logic-systems/input.ts ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-exports.default = ecs_1.logicSystem([controlled_1.default, ecs_1.Position, ecs_1.Rotation, velocity_1.default], (entities, world) => {
-    entities.forEach((entity) => {
+exports.default = ecs_1.logicSystem({ players: [controlled_1.default, ecs_1.Rotation, velocity_1.default, alive_1.default] }, (entities, world) => {
+    entities.players.forEach((entity) => {
         const rotation = entity.get(ecs_1.Rotation);
         const velocity = entity.get(velocity_1.default);
-        if (world.keyboard.pressed(ecs_1.Key.Left)) {
+        const controls = entity.get(controlled_1.default);
+        if (world.keyboard.pressed(controls.left)) {
             rotation.angle = (rotation.angle - ANGLE_DELTA) % FULL_CIRCLE;
         }
-        if (world.keyboard.pressed(ecs_1.Key.Right)) {
+        if (world.keyboard.pressed(controls.right)) {
             rotation.angle = (rotation.angle + ANGLE_DELTA) % FULL_CIRCLE;
         }
-        if (world.keyboard.pressed(ecs_1.Key.Up)) {
+        if (world.keyboard.pressed(controls.forward)) {
             velocity.x += SPEED * Math.cos(rotation.angle - Math.PI / 2);
             velocity.y += SPEED * Math.sin(rotation.angle - Math.PI / 2);
         }
@@ -44565,10 +44540,46 @@ const SPEED = 0.25;
 
 /***/ }),
 
-/***/ "./src/systems/physics.ts":
-/*!********************************!*\
-  !*** ./src/systems/physics.ts ***!
-  \********************************/
+/***/ "./src/logic-systems/mouse-listener.ts":
+/*!*********************************************!*\
+  !*** ./src/logic-systems/mouse-listener.ts ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const clickable_1 = __importDefault(__webpack_require__(/*! ../components/clickable */ "./src/components/clickable.ts"));
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const bounding_box_1 = __importDefault(__webpack_require__(/*! ../math/bounding-box */ "./src/math/bounding-box.ts"));
+const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
+const math_1 = __webpack_require__(/*! ../math/math */ "./src/math/math.ts");
+exports.default = ecs_1.logicSystem({ mouse: [ecs_1.MouseClick], clickables: [clickable_1.default, ecs_1.Size, ecs_1.Position] }, (entities, world) => {
+    entities.mouse.forEach((mouse) => {
+        const ev = mouse.get(ecs_1.MouseClick);
+        const point = vec2d_1.vec2D(ev.x, ev.y);
+        entities.clickables.forEach((clickable) => {
+            const rect = bounding_box_1.default(clickable.get(ecs_1.Position), clickable.get(ecs_1.Size));
+            if (math_1.containsPoint(rect, point)) {
+                const fn = clickable.get(clickable_1.default);
+                fn.onClick(world);
+            }
+        });
+        world.removeEntity(mouse.id);
+    });
+});
+
+
+/***/ }),
+
+/***/ "./src/logic-systems/physics.ts":
+/*!**************************************!*\
+  !*** ./src/logic-systems/physics.ts ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44581,8 +44592,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
 const rect_1 = __webpack_require__(/*! ../primitives/rect */ "./src/primitives/rect.ts");
-exports.default = ecs_1.logicSystem([ecs_1.Position, velocity_1.default], (entities, world) => {
-    entities.forEach((entity) => {
+exports.default = ecs_1.logicSystem({ movables: [ecs_1.Position, velocity_1.default] }, (entities, world) => {
+    entities.movables.forEach((entity) => {
         const position = entity.get(ecs_1.Position);
         const velocity = entity.get(velocity_1.default);
         const { width, height } = worldBox(world);
@@ -44613,10 +44624,391 @@ function worldBox(world) {
 
 /***/ }),
 
-/***/ "./src/systems/render.ts":
-/*!*******************************!*\
-  !*** ./src/systems/render.ts ***!
-  \*******************************/
+/***/ "./src/logic-systems/start-game.ts":
+/*!*****************************************!*\
+  !*** ./src/logic-systems/start-game.ts ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const start_game_1 = __importDefault(__webpack_require__(/*! ../components/events/start-game */ "./src/components/events/start-game.ts"));
+const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
+const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+exports.default = ecs_1.logicSystem({ players: [controlled_1.default], events: [start_game_1.default] }, (entities, world) => {
+    entities.events.forEach((event) => {
+        world.removeEntity(event.id);
+        entities.players.forEach((player) => {
+            player.add(new alive_1.default());
+        });
+    });
+});
+
+
+/***/ }),
+
+/***/ "./src/math/bounding-box.ts":
+/*!**********************************!*\
+  !*** ./src/math/bounding-box.ts ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function boundingBox(position, size) {
+    return {
+        x1: position.x,
+        y1: position.y,
+        x2: position.x + size.width,
+        y2: position.y + size.height,
+        width: size.width,
+        height: size.height,
+    };
+}
+exports.default = boundingBox;
+
+
+/***/ }),
+
+/***/ "./src/math/intersection.ts":
+/*!**********************************!*\
+  !*** ./src/math/intersection.ts ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function intersects(a, b) {
+    const w = 0.5 * (a.width + b.width);
+    const h = 0.5 * (a.height + b.height);
+    const dx = a.x1 + a.width / 2 - (b.x1 + b.width / 2);
+    const dy = a.y1 + a.height / 2 - (b.y1 + b.height / 2);
+    if (Math.abs(dx) <= w && Math.abs(dy) <= h) {
+        const wy = w * dy;
+        const hx = h * dx;
+        if (wy > hx) {
+            if (wy > -hx) {
+                return Collision.TOP;
+            }
+            else {
+                return Collision.LEFT;
+            }
+        }
+        else {
+            if (wy > -hx) {
+                return Collision.RIGHT;
+            }
+            else {
+                return Collision.BOTTOM;
+            }
+        }
+    }
+    else {
+        return undefined;
+    }
+}
+exports.default = intersects;
+var Collision;
+(function (Collision) {
+    Collision[Collision["TOP"] = 0] = "TOP";
+    Collision[Collision["BOTTOM"] = 1] = "BOTTOM";
+    Collision[Collision["LEFT"] = 2] = "LEFT";
+    Collision[Collision["RIGHT"] = 3] = "RIGHT";
+})(Collision || (Collision = {}));
+
+
+/***/ }),
+
+/***/ "./src/math/math.ts":
+/*!**************************!*\
+  !*** ./src/math/math.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.containsPoint = void 0;
+function containsPoint(rect, point) {
+    return (point.x >= rect.x1 &&
+        point.x <= rect.x2 &&
+        point.y >= rect.y1 &&
+        point.y <= rect.y2);
+}
+exports.containsPoint = containsPoint;
+
+
+/***/ }),
+
+/***/ "./src/pixi/app.ts":
+/*!*************************!*\
+  !*** ./src/pixi/app.ts ***!
+  \*************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+function pixiApplication() {
+    const pixi = new PIXI.Application({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        resolution: 1,
+        antialias: false,
+    });
+    pixi.view.style.display = "block";
+    return pixi;
+}
+exports.default = pixiApplication;
+
+
+/***/ }),
+
+/***/ "./src/pixi/game-scene.ts":
+/*!********************************!*\
+  !*** ./src/pixi/game-scene.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.wall = exports.player = void 0;
+const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
+const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
+const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
+function initializeGameScene() {
+    const scene = new PIXI.Container();
+    const entities = [
+        player(window.innerWidth / 2, window.innerHeight / 2, scene),
+        wall(window.innerWidth, window.innerHeight, scene),
+    ];
+    return [scene, entities];
+}
+exports.default = initializeGameScene;
+function player(x, y, stage) {
+    const path = [0, 32, 12.5, 0, 25, 32, 12.5, 25];
+    const g = new PIXI.Graphics();
+    g.pivot.set(16, 12.5);
+    g.lineStyle(3, 0xcecece, 1);
+    g.drawPolygon(path);
+    g.x = x;
+    g.y = y;
+    const player = new ecs_1.PixiEntity();
+    player.addDisplayObject(g, stage);
+    player.add(new controlled_1.default(ecs_1.Key.Up, ecs_1.Key.Left, ecs_1.Key.Right));
+    player.add(new velocity_1.default(0, 0));
+    // player.add(new Alive());
+    return player;
+}
+exports.player = player;
+function wall(width, height, stage) {
+    const path = [0, 0, 0, 100];
+    const g = new PIXI.Graphics();
+    g.lineStyle(3, 0xcecece, 1);
+    g.drawPolygon(path);
+    g.x = (width / 3) * 2;
+    g.y = (height / 3) * 2;
+    const wall = new ecs_1.PixiEntity();
+    wall.addDisplayObject(g, stage);
+    wall.add(new collidable_1.default());
+    return wall;
+}
+exports.wall = wall;
+
+
+/***/ }),
+
+/***/ "./src/pixi/menu-scene.ts":
+/*!********************************!*\
+  !*** ./src/pixi/menu-scene.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const start_game_1 = __importDefault(__webpack_require__(/*! ../components/events/start-game */ "./src/components/events/start-game.ts"));
+const clickable_1 = __importDefault(__webpack_require__(/*! ../components/clickable */ "./src/components/clickable.ts"));
+function initializeMenuScene() {
+    const scene = new PIXI.Container();
+    const entities = [background(scene), button(scene)];
+    return [scene, entities];
+}
+exports.default = initializeMenuScene;
+function background(stage) {
+    const g = new PIXI.Graphics();
+    g.beginFill(0x000000, 0.8);
+    g.drawRect(0, 0, window.innerWidth, window.innerHeight);
+    g.endFill();
+    const entity = new ecs_1.PixiEntity();
+    entity.addDisplayObject(g, stage);
+    return entity;
+}
+function button(stage) {
+    const width = 100;
+    const height = 30;
+    const clickable = new clickable_1.default((world) => {
+        const e = new ecs_1.Entity();
+        e.add(new start_game_1.default());
+        world.addEntity(e);
+    });
+    const button = new PIXI.Container();
+    button.interactive = true;
+    const background = new PIXI.Graphics();
+    background.beginFill(0x000000);
+    background.drawRect(0, 0, width, height);
+    background.endFill();
+    button.addChild(background);
+    const border = new PIXI.Graphics();
+    border.lineStyle(2, 0xffffff, 0.9, 0);
+    border.drawRect(1, 1, width - 2, height - 2);
+    button.addChild(border);
+    const text = new PIXI.Text("Start", { fontFamily: "Arial", fill: 0xffffff });
+    button.addChild(text);
+    const entity = new ecs_1.PixiEntity();
+    entity.add(clickable);
+    entity.addDisplayObject(button, stage);
+    return entity;
+}
+
+
+/***/ }),
+
+/***/ "./src/primitives/rect.ts":
+/*!********************************!*\
+  !*** ./src/primitives/rect.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.rect = void 0;
+function rect(x1, y1, x2, y2) {
+    return {
+        x1,
+        y1,
+        x2,
+        y2,
+        width: x2 - x1,
+        height: y2 - y1,
+    };
+}
+exports.rect = rect;
+
+
+/***/ }),
+
+/***/ "./src/primitives/vec2d.ts":
+/*!*********************************!*\
+  !*** ./src/primitives/vec2d.ts ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.vec2D = void 0;
+function vec2D(x, y) {
+    return {
+        x,
+        y,
+    };
+}
+exports.vec2D = vec2D;
+
+
+/***/ }),
+
+/***/ "./src/render-systems/game.ts":
+/*!************************************!*\
+  !*** ./src/render-systems/game.ts ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -44624,23 +45016,18 @@ function worldBox(world) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-exports.default = ecs_1.renderSystem([ecs_1.Displayable], (entities, lag, world) => {
-    entities.forEach((entity) => {
+exports.default = ecs_1.renderSystem({ displayables: [ecs_1.Displayable] }, (entities, lag, world) => {
+    entities.displayables.forEach((entity) => {
         const { ref } = entity.get(ecs_1.Displayable);
-        ifHas(entity, ecs_1.Position, (position) => {
+        entity.ifHas(ecs_1.Position, (position) => {
             ref.x = position.x;
             ref.y = position.y;
         });
-        ifHas(entity, ecs_1.Rotation, (rotation) => {
+        entity.ifHas(ecs_1.Rotation, (rotation) => {
             ref.rotation = rotation.angle;
         });
     });
 });
-function ifHas(entity, component, fn) {
-    if (entity.has(component)) {
-        fn(entity.get(component));
-    }
-}
 
 
 /***/ })
