@@ -6,6 +6,8 @@ import pixiApplication from "./pixi/app";
 import initializeGameScene from "./pixi/game-scene";
 import initializeMenuScene from "./pixi/menu-scene";
 import renderGame from "./render-systems/game";
+import mouseListener from "./logic-systems/mouse-listener";
+import startGame from "./logic-systems/start-game";
 
 const pixi = pixiApplication();
 
@@ -18,14 +20,14 @@ const [menuScene, menuEntities] = initializeMenuScene();
 
 pixi.stage.addChild(gameScene);
 pixi.stage.addChild(menuScene);
-menuScene.visible = false;
+menuScene.visible = true;
 
 const entities = gameEntities.concat(menuEntities);
 
 const world = new World(
   pixi.view,
   entities,
-  [input, physics, collision],
+  [mouseListener, startGame, input, physics, collision],
   [renderGame],
   { fps: 60, debug: false }
 );

@@ -34,9 +34,6 @@ function button(stage: PIXI.Container): Entity {
 
   const button = new PIXI.Container();
   button.interactive = true;
-  button.on("click", () => {
-    console.log("click");
-  });
   const background = new PIXI.Graphics();
   background.beginFill(0x000000);
   background.drawRect(0, 0, width, height);

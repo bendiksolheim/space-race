@@ -29,7 +29,7 @@ export function player(x: number, y: number, stage: PIXI.Container): Entity {
   player.addDisplayObject(g, stage);
   player.add(new Controlled(Key.Up, Key.Left, Key.Right));
   player.add(new Velocity(0, 0));
-  player.add(new Alive());
+  // player.add(new Alive());
   return player;
 }
 
