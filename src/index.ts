@@ -1,4 +1,4 @@
-import { World } from "ecs";
+import { World, Entity } from "ecs";
 import collision from "./logic-systems/collision";
 import input from "./logic-systems/input";
 import physics from "./logic-systems/physics";
@@ -8,6 +8,7 @@ import initializeMenuScene from "./pixi/menu-scene";
 import renderGame from "./render-systems/game";
 import mouseListener from "./logic-systems/mouse-listener";
 import startGame from "./logic-systems/start-game";
+import Scenes from "./components/scenes";
 
 const pixi = pixiApplication();
 
@@ -18,18 +19,25 @@ document.body.appendChild(pixi.view);
 const [gameScene, gameEntities] = initializeGameScene();
 const [menuScene, menuEntities] = initializeMenuScene();
 
+const scenes = new Entity();
+scenes.add(new Scenes(gameScene, menuScene));
+
 pixi.stage.addChild(gameScene);
 pixi.stage.addChild(menuScene);
-menuScene.visible = true;
 
-const entities = gameEntities.concat(menuEntities);
+const entities = gameEntities.concat(menuEntities).concat([scenes]);
+const logicSystems = [mouseListener, startGame, input, physics, collision];
+const renderConfig = {
+  fps: 60,
+  debug: false,
+};
 
 const world = new World(
   pixi.view,
   entities,
-  [mouseListener, startGame, input, physics, collision],
+  logicSystems,
   [renderGame],
-  { fps: 60, debug: false }
+  renderConfig
 );
 
 world.start();

@@ -3,7 +3,6 @@ import { Entity, PixiEntity, Key } from "ecs";
 import Collidable from "../components/collidable";
 import Controlled from "../components/controlled";
 import Velocity from "../components/velocity";
-import Alive from "../components/alive";
 
 export default function initializeGameScene(): [PIXI.Container, Entity[]] {
   const scene = new PIXI.Container();
@@ -29,7 +28,6 @@ export function player(x: number, y: number, stage: PIXI.Container): Entity {
   player.addDisplayObject(g, stage);
   player.add(new Controlled(Key.Up, Key.Left, Key.Right));
   player.add(new Velocity(0, 0));
-  // player.add(new Alive());
   return player;
 }
 

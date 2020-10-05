@@ -1,7 +1,7 @@
 import { Entity, Key, logicSystem, Rotation, World } from "ecs";
-import Alive from "../components/alive";
 import Controlled from "../components/controlled";
 import Velocity from "../components/velocity";
+import Alive from "../components/alive";
 
 export default logicSystem(
   { players: [Controlled, Rotation, Velocity, Alive] },
