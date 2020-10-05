@@ -44399,6 +44399,28 @@ exports.default = StartGame;
 
 /***/ }),
 
+/***/ "./src/components/scenes.ts":
+/*!**********************************!*\
+  !*** ./src/components/scenes.ts ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class Scenes {
+    constructor(game, menu) {
+        this.name = "scenes";
+        this.game = game;
+        this.menu = menu;
+    }
+}
+exports.default = Scenes;
+
+
+/***/ }),
+
 /***/ "./src/components/velocity.ts":
 /*!************************************!*\
   !*** ./src/components/velocity.ts ***!
@@ -44444,17 +44466,24 @@ const menu_scene_1 = __importDefault(__webpack_require__(/*! ./pixi/menu-scene *
 const game_1 = __importDefault(__webpack_require__(/*! ./render-systems/game */ "./src/render-systems/game.ts"));
 const mouse_listener_1 = __importDefault(__webpack_require__(/*! ./logic-systems/mouse-listener */ "./src/logic-systems/mouse-listener.ts"));
 const start_game_1 = __importDefault(__webpack_require__(/*! ./logic-systems/start-game */ "./src/logic-systems/start-game.ts"));
+const scenes_1 = __importDefault(__webpack_require__(/*! ./components/scenes */ "./src/components/scenes.ts"));
 const pixi = app_1.default();
 document.body.style.margin = "0px";
 document.body.style.padding = "0px";
 document.body.appendChild(pixi.view);
 const [gameScene, gameEntities] = game_scene_1.default();
 const [menuScene, menuEntities] = menu_scene_1.default();
+const scenes = new ecs_1.Entity();
+scenes.add(new scenes_1.default(gameScene, menuScene));
 pixi.stage.addChild(gameScene);
 pixi.stage.addChild(menuScene);
-menuScene.visible = true;
-const entities = gameEntities.concat(menuEntities);
-const world = new ecs_1.World(pixi.view, entities, [mouse_listener_1.default, start_game_1.default, input_1.default, physics_1.default, collision_1.default], [game_1.default], { fps: 60, debug: false });
+const entities = gameEntities.concat(menuEntities).concat([scenes]);
+const logicSystems = [mouse_listener_1.default, start_game_1.default, input_1.default, physics_1.default, collision_1.default];
+const renderConfig = {
+    fps: 60,
+    debug: false,
+};
+const world = new ecs_1.World(pixi.view, entities, logicSystems, [game_1.default], renderConfig);
 world.start();
 
 
@@ -44476,12 +44505,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const bounding_box_1 = __importDefault(__webpack_require__(/*! ../math/bounding-box */ "./src/math/bounding-box.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
-const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
 const intersection_1 = __importDefault(__webpack_require__(/*! ../math/intersection */ "./src/math/intersection.ts"));
 const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
+const scenes_1 = __importDefault(__webpack_require__(/*! ../components/scenes */ "./src/components/scenes.ts"));
+const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
 exports.default = ecs_1.logicSystem({
     player: [ecs_1.Position, ecs_1.Size, controlled_1.default],
     objs: [ecs_1.Position, ecs_1.Size, collidable_1.default],
+    scenes: [scenes_1.default],
 }, (entities, world) => {
     const player = entities.player[0];
     if (player == null) {
@@ -44492,6 +44523,8 @@ exports.default = ecs_1.logicSystem({
         const objRect = bounding_box_1.default(obj.get(ecs_1.Position), obj.get(ecs_1.Size));
         if (intersection_1.default(objRect, playerRect)) {
             player.remove(alive_1.default);
+            const scenes = entities.scenes[0].get(scenes_1.default);
+            scenes.menu.visible = true;
         }
     });
 });
@@ -44513,9 +44546,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
+const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
 exports.default = ecs_1.logicSystem({ players: [controlled_1.default, ecs_1.Rotation, velocity_1.default, alive_1.default] }, (entities, world) => {
     entities.players.forEach((entity) => {
         const rotation = entity.get(ecs_1.Rotation);
@@ -44558,13 +44591,14 @@ const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js")
 const bounding_box_1 = __importDefault(__webpack_require__(/*! ../math/bounding-box */ "./src/math/bounding-box.ts"));
 const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
 const math_1 = __webpack_require__(/*! ../math/math */ "./src/math/math.ts");
-exports.default = ecs_1.logicSystem({ mouse: [ecs_1.MouseClick], clickables: [clickable_1.default, ecs_1.Size, ecs_1.Position] }, (entities, world) => {
+exports.default = ecs_1.logicSystem({ mouse: [ecs_1.MouseClick], clickables: [clickable_1.default, ecs_1.Size, ecs_1.Position, ecs_1.Displayable] }, (entities, world) => {
     entities.mouse.forEach((mouse) => {
         const ev = mouse.get(ecs_1.MouseClick);
         const point = vec2d_1.vec2D(ev.x, ev.y);
         entities.clickables.forEach((clickable) => {
             const rect = bounding_box_1.default(clickable.get(ecs_1.Position), clickable.get(ecs_1.Size));
-            if (math_1.containsPoint(rect, point)) {
+            const { ref } = clickable.get(ecs_1.Displayable);
+            if (math_1.containsPoint(rect, point) && isVisible(ref)) {
                 const fn = clickable.get(clickable_1.default);
                 fn.onClick(world);
             }
@@ -44572,6 +44606,16 @@ exports.default = ecs_1.logicSystem({ mouse: [ecs_1.MouseClick], clickables: [cl
         world.removeEntity(mouse.id);
     });
 });
+function isVisible(obj) {
+    let c = obj;
+    while (c !== null) {
+        if (!c.visible) {
+            return false;
+        }
+        c = c.parent;
+    }
+    return true;
+}
 
 
 /***/ }),
@@ -44638,13 +44682,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const start_game_1 = __importDefault(__webpack_require__(/*! ../components/events/start-game */ "./src/components/events/start-game.ts"));
-const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
+const scenes_1 = __importDefault(__webpack_require__(/*! ../components/scenes */ "./src/components/scenes.ts"));
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-exports.default = ecs_1.logicSystem({ players: [controlled_1.default], events: [start_game_1.default] }, (entities, world) => {
+const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
+const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
+exports.default = ecs_1.logicSystem({
+    players: [controlled_1.default, ecs_1.Position, velocity_1.default, ecs_1.Rotation],
+    events: [start_game_1.default],
+    scenes: [scenes_1.default],
+}, (entities, world) => {
     entities.events.forEach((event) => {
         world.removeEntity(event.id);
         entities.players.forEach((player) => {
+            const position = player.get(ecs_1.Position);
+            const velocity = player.get(velocity_1.default);
+            const rotation = player.get(ecs_1.Rotation);
+            const scenes = entities.scenes[0].get(scenes_1.default);
+            velocity.x = 0;
+            velocity.y = 0;
+            player.add(new alive_1.default());
+            position.x = world.canvas.width / 2;
+            position.y = world.canvas.height / 2;
+            rotation.angle = 0;
+            scenes.menu.visible = false;
             player.add(new alive_1.default());
         });
     });
@@ -44855,7 +44916,6 @@ function player(x, y, stage) {
     player.addDisplayObject(g, stage);
     player.add(new controlled_1.default(ecs_1.Key.Up, ecs_1.Key.Left, ecs_1.Key.Right));
     player.add(new velocity_1.default(0, 0));
-    // player.add(new Alive());
     return player;
 }
 exports.player = player;
