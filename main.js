@@ -44626,10 +44626,11 @@ exports.default = Scenes;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 class Velocity {
-    constructor(x, y) {
+    constructor(forward, left = 0, right = 0) {
         this.name = "velocity";
-        this.x = x;
-        this.y = y;
+        this.forward = forward;
+        this.left = left;
+        this.right = right;
     }
 }
 exports.default = Velocity;
@@ -44652,7 +44653,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const collision_1 = __importDefault(__webpack_require__(/*! ./logic-systems/collision */ "./src/logic-systems/collision.ts"));
-const input_1 = __importDefault(__webpack_require__(/*! ./logic-systems/input */ "./src/logic-systems/input.ts"));
+const thrusters_1 = __importDefault(__webpack_require__(/*! ./logic-systems/thrusters */ "./src/logic-systems/thrusters.ts"));
 const physics_1 = __importDefault(__webpack_require__(/*! ./logic-systems/physics */ "./src/logic-systems/physics.ts"));
 const app_1 = __importDefault(__webpack_require__(/*! ./pixi/app */ "./src/pixi/app.ts"));
 const game_scene_1 = __importDefault(__webpack_require__(/*! ./pixi/game-scene */ "./src/pixi/game-scene.ts"));
@@ -44663,6 +44664,7 @@ const start_game_1 = __importDefault(__webpack_require__(/*! ./logic-systems/sta
 const scenes_1 = __importDefault(__webpack_require__(/*! ./components/scenes */ "./src/components/scenes.ts"));
 const pixi_fps_1 = __importDefault(__webpack_require__(/*! pixi-fps */ "./node_modules/pixi-fps/dist/index.js"));
 const camera_1 = __importDefault(__webpack_require__(/*! ./logic-systems/camera */ "./src/logic-systems/camera.ts"));
+const slowdown_1 = __importDefault(__webpack_require__(/*! ./logic-systems/slowdown */ "./src/logic-systems/slowdown.ts"));
 const pixi = app_1.default();
 const fpsCounter = new pixi_fps_1.default();
 document.body.style.margin = "0px";
@@ -44679,9 +44681,10 @@ const entities = gameEntities.concat(menuEntities).concat([scenes]);
 const logicSystems = [
     mouse_listener_1.default,
     start_game_1.default,
-    input_1.default,
+    thrusters_1.default,
     physics_1.default,
     collision_1.default,
+    slowdown_1.default,
     camera_1.default,
 ];
 const renderConfig = {
@@ -44774,47 +44777,6 @@ exports.default = ecs_1.logicSystem({
 
 /***/ }),
 
-/***/ "./src/logic-systems/input.ts":
-/*!************************************!*\
-  !*** ./src/logic-systems/input.ts ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
-const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
-exports.default = ecs_1.logicSystem({ players: [controlled_1.default, ecs_1.Rotation, velocity_1.default, alive_1.default] }, (entities, world) => {
-    entities.players.forEach((entity) => {
-        const rotation = entity.get(ecs_1.Rotation);
-        const velocity = entity.get(velocity_1.default);
-        const controls = entity.get(controlled_1.default);
-        if (world.keyboard.pressed(controls.left)) {
-            rotation.angle = (rotation.angle - ANGLE_DELTA) % FULL_CIRCLE;
-        }
-        if (world.keyboard.pressed(controls.right)) {
-            rotation.angle = (rotation.angle + ANGLE_DELTA) % FULL_CIRCLE;
-        }
-        if (world.keyboard.pressed(controls.forward)) {
-            velocity.x += SPEED * Math.cos(rotation.angle - Math.PI / 2);
-            velocity.y += SPEED * Math.sin(rotation.angle - Math.PI / 2);
-        }
-    });
-});
-const FULL_CIRCLE = 2 * Math.PI;
-const ANGLE_DELTA = FULL_CIRCLE / 120;
-const SPEED = 0.25;
-
-
-/***/ }),
-
 /***/ "./src/logic-systems/mouse-listener.ts":
 /*!*********************************************!*\
   !*** ./src/logic-systems/mouse-listener.ts ***!
@@ -44877,32 +44839,75 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-const rect_1 = __webpack_require__(/*! ../primitives/rect */ "./src/primitives/rect.ts");
-exports.default = ecs_1.logicSystem({ movables: [ecs_1.Position, velocity_1.default] }, (entities, world) => {
+exports.default = ecs_1.logicSystem({ movables: [ecs_1.Position, velocity_1.default, ecs_1.Rotation] }, (entities, world) => {
     entities.movables.forEach((entity) => {
         const position = entity.get(ecs_1.Position);
         const velocity = entity.get(velocity_1.default);
-        const { width, height } = worldBox(world);
-        if (Math.abs(velocity.x) < 0.01) {
-            velocity.x = 0;
-        }
-        else {
-            velocity.x *= 0.999;
-        }
-        if (Math.abs(velocity.y) < 0.01) {
-            velocity.y = 0;
-        }
-        else {
-            velocity.y *= 0.999;
-        }
-        position.x += velocity.x;
-        position.y += velocity.y;
+        const rotation = entity.get(ecs_1.Rotation);
+        rotation.angle += velocity.left;
+        rotation.angle -= velocity.right;
+        const vx = velocity.forward * Math.cos(rotation.angle - Math.PI / 2);
+        const vy = velocity.forward * Math.sin(rotation.angle - Math.PI / 2);
+        // velocity.x += SPEED * Math.cos(rotation.angle - Math.PI / 2);
+        // velocity.y += SPEED * Math.sin(rotation.angle - Math.PI / 2);
+        // if (Math.abs(velocity.x) < 0.01) {
+        //   velocity.x = 0;
+        // } else {
+        //   velocity.x *= DEACCELERATION;
+        // }
+        // if (Math.abs(velocity.y) < 0.01) {
+        //   velocity.y = 0;
+        // } else {
+        //   velocity.y *= DEACCELERATION;
+        // }
+        position.x += vx;
+        position.y += vy;
     });
 });
-function worldBox(world) {
-    const canvas = world.canvas;
-    return rect_1.rect(0, 0, canvas.width, canvas.height);
-}
+
+
+/***/ }),
+
+/***/ "./src/logic-systems/slowdown.ts":
+/*!***************************************!*\
+  !*** ./src/logic-systems/slowdown.ts ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
+exports.default = ecs_1.logicSystem({ thrusters: [velocity_1.default] }, (entities, world) => {
+    entities.thrusters.forEach((thruster) => {
+        const velocity = thruster.get(velocity_1.default);
+        if (Math.abs(velocity.forward) < 0.01) {
+            velocity.forward = 0;
+        }
+        else {
+            velocity.forward *= FORWARD_SLOWDOWN;
+        }
+        if (Math.abs(velocity.left) < 0.01) {
+            velocity.left = 0;
+        }
+        else {
+            velocity.left *= SIDE_SLOWDOWN;
+        }
+        if (Math.abs(velocity.right) < 0.01) {
+            velocity.right = 0;
+        }
+        else {
+            velocity.right *= SIDE_SLOWDOWN;
+        }
+    });
+});
+const FORWARD_SLOWDOWN = 0.99;
+const SIDE_SLOWDOWN = 0.8;
 
 
 /***/ }),
@@ -44938,8 +44943,7 @@ exports.default = ecs_1.logicSystem({
             const velocity = player.get(velocity_1.default);
             const rotation = player.get(ecs_1.Rotation);
             const scenes = entities.scenes[0].get(scenes_1.default);
-            velocity.x = 0;
-            velocity.y = 0;
+            velocity.forward = 0;
             player.add(new alive_1.default());
             position.x = world.canvas.width / 2;
             position.y = world.canvas.height / 2;
@@ -44949,6 +44953,46 @@ exports.default = ecs_1.logicSystem({
         });
     });
 });
+
+
+/***/ }),
+
+/***/ "./src/logic-systems/thrusters.ts":
+/*!****************************************!*\
+  !*** ./src/logic-systems/thrusters.ts ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
+const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
+const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
+exports.default = ecs_1.logicSystem({ players: [controlled_1.default, ecs_1.Rotation, velocity_1.default, alive_1.default] }, (entities, world) => {
+    entities.players.forEach((entity) => {
+        const rotation = entity.get(ecs_1.Rotation);
+        const velocity = entity.get(velocity_1.default);
+        const controls = entity.get(controlled_1.default);
+        if (world.keyboard.pressed(controls.left)) {
+            velocity.right = SIDE_THRUSTER_SPEED;
+        }
+        if (world.keyboard.pressed(controls.right)) {
+            velocity.left = SIDE_THRUSTER_SPEED;
+        }
+        if (world.keyboard.pressed(controls.forward)) {
+            velocity.forward += FORWARD_THRUSTER_SPEED;
+        }
+    });
+});
+const FULL_CIRCLE = 2 * Math.PI;
+const FORWARD_THRUSTER_SPEED = 0.25;
+const SIDE_THRUSTER_SPEED = FULL_CIRCLE / 120;
 
 
 /***/ }),
@@ -45162,7 +45206,7 @@ function player(x, y, stage) {
     const player = new ecs_1.PixiEntity();
     player.addDisplayObject(g, stage);
     player.add(new controlled_1.default(ecs_1.Key.Up, ecs_1.Key.Left, ecs_1.Key.Right));
-    player.add(new velocity_1.default(0, 0));
+    player.add(new velocity_1.default(0));
     return player;
 }
 exports.player = player;
@@ -45260,32 +45304,6 @@ function button(stage) {
     entity.addDisplayObject(button, stage);
     return entity;
 }
-
-
-/***/ }),
-
-/***/ "./src/primitives/rect.ts":
-/*!********************************!*\
-  !*** ./src/primitives/rect.ts ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.rect = void 0;
-function rect(x1, y1, x2, y2) {
-    return {
-        x1,
-        y1,
-        x2,
-        y2,
-        width: x2 - x1,
-        height: y2 - y1,
-    };
-}
-exports.rect = rect;
 
 
 /***/ }),
