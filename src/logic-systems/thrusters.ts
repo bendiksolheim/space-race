@@ -12,21 +12,20 @@ export default logicSystem(
       const controls = entity.get(Controlled);
 
       if (world.keyboard.pressed(controls.left)) {
-        rotation.angle = (rotation.angle - ANGLE_DELTA) % FULL_CIRCLE;
+        velocity.right = SIDE_THRUSTER_SPEED;
       }
 
       if (world.keyboard.pressed(controls.right)) {
-        rotation.angle = (rotation.angle + ANGLE_DELTA) % FULL_CIRCLE;
+        velocity.left = SIDE_THRUSTER_SPEED;
       }
 
       if (world.keyboard.pressed(controls.forward)) {
-        velocity.x += SPEED * Math.cos(rotation.angle - Math.PI / 2);
-        velocity.y += SPEED * Math.sin(rotation.angle - Math.PI / 2);
+        velocity.forward += FORWARD_THRUSTER_SPEED;
       }
     });
   }
 );
 
 const FULL_CIRCLE = 2 * Math.PI;
-const ANGLE_DELTA = FULL_CIRCLE / 120;
-const SPEED = 0.25;
+const FORWARD_THRUSTER_SPEED = 0.25;
+const SIDE_THRUSTER_SPEED = FULL_CIRCLE / 120;

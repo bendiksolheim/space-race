@@ -1,34 +1,37 @@
-import { Entity, logicSystem, World, Position } from "ecs";
+import { Entity, logicSystem, World, Position, Rotation } from "ecs";
 import Velocity from "../components/velocity";
 import { Rect, rect } from "../primitives/rect";
 
 export default logicSystem(
-  { movables: [Position, Velocity] },
+  { movables: [Position, Velocity, Rotation] },
   (entities, world) => {
     entities.movables.forEach((entity) => {
       const position = entity.get(Position);
       const velocity = entity.get(Velocity);
-      const { width, height } = worldBox(world);
+      const rotation = entity.get(Rotation);
 
-      if (Math.abs(velocity.x) < 0.01) {
-        velocity.x = 0;
-      } else {
-        velocity.x *= 0.999;
-      }
+      rotation.angle += velocity.left;
+      rotation.angle -= velocity.right;
 
-      if (Math.abs(velocity.y) < 0.01) {
-        velocity.y = 0;
-      } else {
-        velocity.y *= 0.999;
-      }
+      const vx = velocity.forward * Math.cos(rotation.angle - Math.PI / 2);
+      const vy = velocity.forward * Math.sin(rotation.angle - Math.PI / 2);
+      // velocity.x += SPEED * Math.cos(rotation.angle - Math.PI / 2);
+      // velocity.y += SPEED * Math.sin(rotation.angle - Math.PI / 2);
 
-      position.x += velocity.x;
-      position.y += velocity.y;
+      // if (Math.abs(velocity.x) < 0.01) {
+      //   velocity.x = 0;
+      // } else {
+      //   velocity.x *= DEACCELERATION;
+      // }
+
+      // if (Math.abs(velocity.y) < 0.01) {
+      //   velocity.y = 0;
+      // } else {
+      //   velocity.y *= DEACCELERATION;
+      // }
+
+      position.x += vx;
+      position.y += vy;
     });
   }
 );
-
-function worldBox(world: World): Rect {
-  const canvas = world.canvas;
-  return rect(0, 0, canvas.width, canvas.height);
-}

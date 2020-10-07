@@ -1,16 +1,4 @@
-import Appearance, { Color } from "../components/appearance";
-import {
-  World,
-  renderSystem,
-  Entity,
-  Component,
-  Rotation,
-  Displayable,
-  Position,
-  Pivot,
-} from "ecs";
-import Velocity from "../components/velocity";
-import GameScene from "../components/game-scene";
+import { Displayable, Pivot, Position, renderSystem, Rotation } from "ecs";
 
 export default renderSystem(
   { displayables: [Displayable] },

@@ -20,8 +20,7 @@ export default logicSystem(
         const velocity = player.get(Velocity);
         const rotation = player.get(Rotation);
         const scenes = entities.scenes[0].get(Scenes);
-        velocity.x = 0;
-        velocity.y = 0;
+        velocity.forward = 0;
         player.add(new Alive());
         position.x = world.canvas.width / 2;
         position.y = world.canvas.height / 2;

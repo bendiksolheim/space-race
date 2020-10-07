@@ -1,6 +1,6 @@
 import { World, Entity } from "ecs";
 import collision from "./logic-systems/collision";
-import steering from "./logic-systems/steering";
+import thrusters from "./logic-systems/thrusters";
 import physics from "./logic-systems/physics";
 import pixiApplication from "./pixi/app";
 import initializeGameScene from "./pixi/game-scene";
@@ -11,6 +11,7 @@ import startGame from "./logic-systems/start-game";
 import Scenes from "./components/scenes";
 import PixiFps from "pixi-fps";
 import camera from "./logic-systems/camera";
+import slowdown from "./logic-systems/slowdown";
 
 const pixi = pixiApplication();
 const fpsCounter = new PixiFps();
@@ -33,9 +34,10 @@ const entities = gameEntities.concat(menuEntities).concat([scenes]);
 const logicSystems = [
   mouseListener,
   startGame,
-  steering,
+  thrusters,
   physics,
   collision,
+  slowdown,
   camera,
 ];
 const renderConfig = {

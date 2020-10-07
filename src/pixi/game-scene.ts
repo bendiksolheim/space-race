@@ -37,7 +37,7 @@ export function player(x: number, y: number, stage: PIXI.Container): Entity {
   const player = new PixiEntity();
   player.addDisplayObject(g, stage);
   player.add(new Controlled(Key.Up, Key.Left, Key.Right));
-  player.add(new Velocity(0, 0));
+  player.add(new Velocity(0));
   return player;
 }
 

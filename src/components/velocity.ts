@@ -2,12 +2,14 @@ import { Component } from "ecs";
 
 class Velocity implements Component {
   name = "velocity";
-  x: number;
-  y: number;
+  forward: number;
+  left: number;
+  right: number;
 
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+  constructor(forward: number, left: number = 0, right: number = 0) {
+    this.forward = forward;
+    this.left = left;
+    this.right = right;
   }
 }
 
