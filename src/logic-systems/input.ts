@@ -28,5 +28,5 @@ export default logicSystem(
 );
 
 const FULL_CIRCLE = 2 * Math.PI;
-const ANGLE_DELTA = FULL_CIRCLE / 60;
+const ANGLE_DELTA = FULL_CIRCLE / 120;
 const SPEED = 0.25;
