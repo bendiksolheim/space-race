@@ -9,8 +9,10 @@ import renderGame from "./render-systems/game";
 import mouseListener from "./logic-systems/mouse-listener";
 import startGame from "./logic-systems/start-game";
 import Scenes from "./components/scenes";
+import PixiFps from "pixi-fps";
 
 const pixi = pixiApplication();
+const fpsCounter = new PixiFps();
 
 document.body.style.margin = "0px";
 document.body.style.padding = "0px";
