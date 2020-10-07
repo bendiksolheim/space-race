@@ -36707,7 +36707,7 @@ class MouseClick {
 /*!****************************************!*\
   !*** ./node_modules/ecs/dist/index.js ***!
   \****************************************/
-/*! exports provided: Entity, logicSystem, renderSystem, World, Key, PixiEntity, Displayable, Position, Rotation, Size, MouseClick */
+/*! exports provided: Entity, logicSystem, renderSystem, World, Key, PixiEntity, Displayable, Position, Rotation, Pivot, Size, MouseClick */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -36744,6 +36744,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _events_mouse_click__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./events/mouse-click */ "./node_modules/ecs/dist/events/mouse-click.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MouseClick", function() { return _events_mouse_click__WEBPACK_IMPORTED_MODULE_10__["default"]; });
+
+/* harmony import */ var _pixi_pivot__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./pixi/pivot */ "./node_modules/ecs/dist/pixi/pivot.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Pivot", function() { return _pixi_pivot__WEBPACK_IMPORTED_MODULE_11__["default"]; });
+
 
 
 
@@ -36954,6 +36958,30 @@ class Displayable {
 
 /***/ }),
 
+/***/ "./node_modules/ecs/dist/pixi/pivot.js":
+/*!*********************************************!*\
+  !*** ./node_modules/ecs/dist/pixi/pivot.js ***!
+  \*********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Pixi pivot point
+ */
+class Pivot {
+    constructor(x, y) {
+        this.name = "pivot";
+        this.x = x;
+        this.y = y;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Pivot);
+
+
+/***/ }),
+
 /***/ "./node_modules/ecs/dist/pixi/pixi-entity.js":
 /*!***************************************************!*\
   !*** ./node_modules/ecs/dist/pixi/pixi-entity.js ***!
@@ -36968,6 +36996,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _displayable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./displayable */ "./node_modules/ecs/dist/pixi/displayable.js");
 /* harmony import */ var _rotation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./rotation */ "./node_modules/ecs/dist/pixi/rotation.js");
 /* harmony import */ var _size__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./size */ "./node_modules/ecs/dist/pixi/size.js");
+/* harmony import */ var _pivot__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pivot */ "./node_modules/ecs/dist/pixi/pivot.js");
+
 
 
 
@@ -36990,6 +37020,7 @@ class PixiEntity extends _entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
         this.add(new _displayable__WEBPACK_IMPORTED_MODULE_2__["default"](obj));
         this.add(new _rotation__WEBPACK_IMPORTED_MODULE_3__["default"](obj.rotation));
         this.add(new _size__WEBPACK_IMPORTED_MODULE_4__["default"](obj.width, obj.height));
+        this.add(new _pivot__WEBPACK_IMPORTED_MODULE_5__["default"](obj.pivot.x, obj.pivot.y));
     }
 }
 /* harmony default export */ __webpack_exports__["default"] = (PixiEntity);
@@ -38706,6 +38737,149 @@ function parseURI (str, opts) {
 }
 
 module.exports = parseURI
+
+
+/***/ }),
+
+/***/ "./node_modules/pixi-fps/dist/app/pixi-fps.js":
+/*!****************************************************!*\
+  !*** ./node_modules/pixi-fps/dist/app/pixi-fps.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PixiFps = void 0;
+
+var PIXI = _interopRequireWildcard(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj.default = obj; return newObj; } }
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var PixiFps =
+/*#__PURE__*/
+function (_PIXI$Container) {
+  _inherits(PixiFps, _PIXI$Container);
+
+  function PixiFps(style) {
+    var _this;
+
+    _classCallCheck(this, PixiFps);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(PixiFps).call(this));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_fpsTextField", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_fpsTicker", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_timeValues", void 0);
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_lastTime", void 0);
+
+    var defaultStyle = new PIXI.TextStyle({
+      fontSize: PixiFps.DEFAULT_FONT_SIZE,
+      fill: PixiFps.DEFAULT_FONT_COLOR
+    });
+    _this._timeValues = [];
+    _this._lastTime = new Date().getTime();
+    _this._fpsTextField = new PIXI.Text("", _objectSpread({}, defaultStyle, style));
+    _this._fpsTicker = new PIXI.Ticker();
+
+    _this._fpsTicker.add(function () {
+      _this.measureFPS();
+    });
+
+    _this._fpsTicker.start();
+
+    _this.addChild(_this._fpsTextField);
+
+    return _this;
+  }
+
+  _createClass(PixiFps, [{
+    key: "measureFPS",
+    value: function measureFPS() {
+      var currentTime = new Date().getTime();
+
+      this._timeValues.push(1000 / (currentTime - this._lastTime));
+
+      if (this._timeValues.length === 30) {
+        var total = 0;
+
+        for (var i = 0; i < 30; i++) {
+          total += this._timeValues[i];
+        }
+
+        this._fpsTextField.text = (total / 30).toFixed(2);
+        this._timeValues.length = 0;
+      }
+
+      this._lastTime = currentTime;
+    }
+  }, {
+    key: "style",
+    set: function set(style) {
+      this._fpsTextField.style = style;
+    }
+  }]);
+
+  return PixiFps;
+}(PIXI.Container);
+
+exports.PixiFps = PixiFps;
+
+_defineProperty(PixiFps, "DEFAULT_FONT_SIZE", 30);
+
+_defineProperty(PixiFps, "DEFAULT_FONT_COLOR", 0xff0000);
+
+
+/***/ }),
+
+/***/ "./node_modules/pixi-fps/dist/index.js":
+/*!*********************************************!*\
+  !*** ./node_modules/pixi-fps/dist/index.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _pixiFps = __webpack_require__(/*! ./app/pixi-fps */ "./node_modules/pixi-fps/dist/app/pixi-fps.js");
+
+var _default = _pixiFps.PixiFps;
+exports.default = _default;
 
 
 /***/ }),
@@ -44399,6 +44573,26 @@ exports.default = StartGame;
 
 /***/ }),
 
+/***/ "./src/components/game-scene.ts":
+/*!**************************************!*\
+  !*** ./src/components/game-scene.ts ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class GameScene {
+    constructor() {
+        this.name = "game-scene";
+    }
+}
+exports.default = GameScene;
+
+
+/***/ }),
+
 /***/ "./src/components/scenes.ts":
 /*!**********************************!*\
   !*** ./src/components/scenes.ts ***!
@@ -44467,24 +44661,72 @@ const game_1 = __importDefault(__webpack_require__(/*! ./render-systems/game */ 
 const mouse_listener_1 = __importDefault(__webpack_require__(/*! ./logic-systems/mouse-listener */ "./src/logic-systems/mouse-listener.ts"));
 const start_game_1 = __importDefault(__webpack_require__(/*! ./logic-systems/start-game */ "./src/logic-systems/start-game.ts"));
 const scenes_1 = __importDefault(__webpack_require__(/*! ./components/scenes */ "./src/components/scenes.ts"));
+const pixi_fps_1 = __importDefault(__webpack_require__(/*! pixi-fps */ "./node_modules/pixi-fps/dist/index.js"));
+const camera_1 = __importDefault(__webpack_require__(/*! ./logic-systems/camera */ "./src/logic-systems/camera.ts"));
 const pixi = app_1.default();
+const fpsCounter = new pixi_fps_1.default();
 document.body.style.margin = "0px";
 document.body.style.padding = "0px";
 document.body.appendChild(pixi.view);
-const [gameScene, gameEntities] = game_scene_1.default();
-const [menuScene, menuEntities] = menu_scene_1.default();
+const [gameScene, gameEntities] = game_scene_1.default(pixi.stage);
+const [menuScene, menuEntities] = menu_scene_1.default(pixi.stage);
 const scenes = new ecs_1.Entity();
 scenes.add(new scenes_1.default(gameScene, menuScene));
 pixi.stage.addChild(gameScene);
 pixi.stage.addChild(menuScene);
+pixi.stage.addChild(fpsCounter);
 const entities = gameEntities.concat(menuEntities).concat([scenes]);
-const logicSystems = [mouse_listener_1.default, start_game_1.default, input_1.default, physics_1.default, collision_1.default];
+const logicSystems = [
+    mouse_listener_1.default,
+    start_game_1.default,
+    input_1.default,
+    physics_1.default,
+    collision_1.default,
+    camera_1.default,
+];
 const renderConfig = {
     fps: 60,
     debug: false,
 };
 const world = new ecs_1.World(pixi.view, entities, logicSystems, [game_1.default], renderConfig);
 world.start();
+
+
+/***/ }),
+
+/***/ "./src/logic-systems/camera.ts":
+/*!*************************************!*\
+  !*** ./src/logic-systems/camera.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
+const game_scene_1 = __importDefault(__webpack_require__(/*! ../components/game-scene */ "./src/components/game-scene.ts"));
+exports.default = ecs_1.logicSystem({
+    player: [ecs_1.Position, ecs_1.Rotation, controlled_1.default],
+    scene: [ecs_1.Position, ecs_1.Pivot, ecs_1.Rotation, game_scene_1.default],
+}, (entities, world) => {
+    const player = entities.player[0];
+    const playerPosition = player.get(ecs_1.Position);
+    const playerRotation = player.get(ecs_1.Rotation);
+    const scene = entities.scene[0];
+    const scenePivot = scene.get(ecs_1.Pivot);
+    const scenePosition = scene.get(ecs_1.Position);
+    const sceneRotation = scene.get(ecs_1.Rotation);
+    scenePivot.x = playerPosition.x;
+    scenePivot.y = playerPosition.y;
+    scenePosition.x = world.canvas.width / 2;
+    scenePosition.y = world.canvas.height / 2;
+    sceneRotation.angle = -playerRotation.angle;
+});
 
 
 /***/ }),
@@ -44567,7 +44809,7 @@ exports.default = ecs_1.logicSystem({ players: [controlled_1.default, ecs_1.Rota
     });
 });
 const FULL_CIRCLE = 2 * Math.PI;
-const ANGLE_DELTA = FULL_CIRCLE / 60;
+const ANGLE_DELTA = FULL_CIRCLE / 120;
 const SPEED = 0.25;
 
 
@@ -44641,9 +44883,6 @@ exports.default = ecs_1.logicSystem({ movables: [ecs_1.Position, velocity_1.defa
         const position = entity.get(ecs_1.Position);
         const velocity = entity.get(velocity_1.default);
         const { width, height } = worldBox(world);
-        // Black magic to make entity wrap around edges
-        position.x = ((position.x % width) + width) % width;
-        position.y = ((position.y % height) + height) % height;
         if (Math.abs(velocity.x) < 0.01) {
             velocity.x = 0;
         }
@@ -44895,11 +45134,19 @@ const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js")
 const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-function initializeGameScene() {
+const game_scene_1 = __importDefault(__webpack_require__(/*! ../components/game-scene */ "./src/components/game-scene.ts"));
+function initializeGameScene(stage) {
     const scene = new PIXI.Container();
+    scene.width = stage.width;
+    scene.height = stage.height;
+    const sceneEntity = new ecs_1.PixiEntity();
+    sceneEntity.addDisplayObject(scene, stage);
+    sceneEntity.add(new game_scene_1.default());
     const entities = [
+        sceneEntity,
         player(window.innerWidth / 2, window.innerHeight / 2, scene),
-        wall(window.innerWidth, window.innerHeight, scene),
+        wall((window.innerWidth / 3) * 2, (window.innerHeight / 3) * 2, scene),
+        wall(300, -100, scene),
     ];
     return [scene, entities];
 }
@@ -44919,13 +45166,13 @@ function player(x, y, stage) {
     return player;
 }
 exports.player = player;
-function wall(width, height, stage) {
+function wall(x, y, stage) {
     const path = [0, 0, 0, 100];
     const g = new PIXI.Graphics();
     g.lineStyle(3, 0xcecece, 1);
     g.drawPolygon(path);
-    g.x = (width / 3) * 2;
-    g.y = (height / 3) * 2;
+    g.x = x;
+    g.y = y;
     const wall = new ecs_1.PixiEntity();
     wall.addDisplayObject(g, stage);
     wall.add(new collidable_1.default());
@@ -44972,7 +45219,7 @@ const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pix
 const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
 const start_game_1 = __importDefault(__webpack_require__(/*! ../components/events/start-game */ "./src/components/events/start-game.ts"));
 const clickable_1 = __importDefault(__webpack_require__(/*! ../components/clickable */ "./src/components/clickable.ts"));
-function initializeMenuScene() {
+function initializeMenuScene(stage) {
     const scene = new PIXI.Container();
     const entities = [background(scene), button(scene)];
     return [scene, entities];
@@ -45085,6 +45332,10 @@ exports.default = ecs_1.renderSystem({ displayables: [ecs_1.Displayable] }, (ent
         });
         entity.ifHas(ecs_1.Rotation, (rotation) => {
             ref.rotation = rotation.angle;
+        });
+        entity.ifHas(ecs_1.Pivot, (pivot) => {
+            ref.pivot.x = pivot.x;
+            ref.pivot.y = pivot.y;
         });
     });
 });
