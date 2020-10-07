@@ -10,10 +10,6 @@ export default logicSystem(
       const velocity = entity.get(Velocity);
       const { width, height } = worldBox(world);
 
-      // Black magic to make entity wrap around edges
-      position.x = ((position.x % width) + width) % width;
-      position.y = ((position.y % height) + height) % height;
-
       if (Math.abs(velocity.x) < 0.01) {
         velocity.x = 0;
       } else {
