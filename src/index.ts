@@ -1,6 +1,6 @@
 import { World, Entity } from "ecs";
 import collision from "./logic-systems/collision";
-import input from "./logic-systems/input";
+import steering from "./logic-systems/steering";
 import physics from "./logic-systems/physics";
 import pixiApplication from "./pixi/app";
 import initializeGameScene from "./pixi/game-scene";
@@ -33,7 +33,7 @@ const entities = gameEntities.concat(menuEntities).concat([scenes]);
 const logicSystems = [
   mouseListener,
   startGame,
-  input,
+  steering,
   physics,
   collision,
   camera,
