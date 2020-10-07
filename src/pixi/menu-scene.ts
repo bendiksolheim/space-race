@@ -3,7 +3,9 @@ import { Entity, PixiEntity, World } from "ecs";
 import StartGame from "../components/events/start-game";
 import Clickable from "../components/clickable";
 
-export default function initializeMenuScene(): [PIXI.Container, Entity[]] {
+export default function initializeMenuScene(
+  stage: PIXI.Container
+): [PIXI.Container, Entity[]] {
   const scene = new PIXI.Container();
 
   const entities = [background(scene), button(scene)];

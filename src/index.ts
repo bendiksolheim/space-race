@@ -10,6 +10,7 @@ import mouseListener from "./logic-systems/mouse-listener";
 import startGame from "./logic-systems/start-game";
 import Scenes from "./components/scenes";
 import PixiFps from "pixi-fps";
+import camera from "./logic-systems/camera";
 
 const pixi = pixiApplication();
 const fpsCounter = new PixiFps();
@@ -18,17 +19,25 @@ document.body.style.margin = "0px";
 document.body.style.padding = "0px";
 document.body.appendChild(pixi.view);
 
-const [gameScene, gameEntities] = initializeGameScene();
-const [menuScene, menuEntities] = initializeMenuScene();
+const [gameScene, gameEntities] = initializeGameScene(pixi.stage);
+const [menuScene, menuEntities] = initializeMenuScene(pixi.stage);
 
 const scenes = new Entity();
 scenes.add(new Scenes(gameScene, menuScene));
 
 pixi.stage.addChild(gameScene);
 pixi.stage.addChild(menuScene);
+pixi.stage.addChild(fpsCounter);
 
 const entities = gameEntities.concat(menuEntities).concat([scenes]);
-const logicSystems = [mouseListener, startGame, input, physics, collision];
+const logicSystems = [
+  mouseListener,
+  startGame,
+  input,
+  physics,
+  collision,
+  camera,
+];
 const renderConfig = {
   fps: 60,
   debug: false,

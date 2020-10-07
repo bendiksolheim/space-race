@@ -3,13 +3,23 @@ import { Entity, PixiEntity, Key } from "ecs";
 import Collidable from "../components/collidable";
 import Controlled from "../components/controlled";
 import Velocity from "../components/velocity";
+import GameScene from "../components/game-scene";
 
-export default function initializeGameScene(): [PIXI.Container, Entity[]] {
+export default function initializeGameScene(
+  stage: PIXI.Container
+): [PIXI.Container, Entity[]] {
   const scene = new PIXI.Container();
+  scene.width = stage.width;
+  scene.height = stage.height;
+  const sceneEntity = new PixiEntity();
+  sceneEntity.addDisplayObject(scene, stage);
+  sceneEntity.add(new GameScene());
 
   const entities = [
+    sceneEntity,
     player(window.innerWidth / 2, window.innerHeight / 2, scene),
-    wall(window.innerWidth, window.innerHeight, scene),
+    wall((window.innerWidth / 3) * 2, (window.innerHeight / 3) * 2, scene),
+    wall(300, -100, scene),
   ];
 
   return [scene, entities];
@@ -31,17 +41,13 @@ export function player(x: number, y: number, stage: PIXI.Container): Entity {
   return player;
 }
 
-export function wall(
-  width: number,
-  height: number,
-  stage: PIXI.Container
-): Entity {
+export function wall(x: number, y: number, stage: PIXI.Container): Entity {
   const path = [0, 0, 0, 100];
   const g = new PIXI.Graphics();
   g.lineStyle(3, 0xcecece, 1);
   g.drawPolygon(path);
-  g.x = (width / 3) * 2;
-  g.y = (height / 3) * 2;
+  g.x = x;
+  g.y = y;
 
   const wall = new PixiEntity();
   wall.addDisplayObject(g, stage);

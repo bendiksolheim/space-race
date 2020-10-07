@@ -7,8 +7,10 @@ import {
   Rotation,
   Displayable,
   Position,
+  Pivot,
 } from "ecs";
 import Velocity from "../components/velocity";
+import GameScene from "../components/game-scene";
 
 export default renderSystem(
   { displayables: [Displayable] },
@@ -23,6 +25,11 @@ export default renderSystem(
 
       entity.ifHas(Rotation, (rotation) => {
         ref.rotation = rotation.angle;
+      });
+
+      entity.ifHas(Pivot, (pivot) => {
+        ref.pivot.x = pivot.x;
+        ref.pivot.y = pivot.y;
       });
     });
   }
