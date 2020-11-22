@@ -7,7 +7,6 @@ export default logicSystem(
   { players: [Controlled, Rotation, Velocity, Alive] },
   (entities, world) => {
     entities.players.forEach((entity) => {
-      const rotation = entity.get(Rotation);
       const velocity = entity.get(Velocity);
       const controls = entity.get(Controlled);
 

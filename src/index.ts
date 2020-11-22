@@ -1,5 +1,6 @@
 import { World, Entity } from "ecs";
 import collision from "./logic-systems/collision";
+
 import thrusters from "./logic-systems/thrusters";
 import physics from "./logic-systems/physics";
 import pixiApplication from "./pixi/app";
@@ -28,7 +29,7 @@ scenes.add(new Scenes(gameScene, menuScene));
 
 pixi.stage.addChild(gameScene);
 pixi.stage.addChild(menuScene);
-pixi.stage.addChild(fpsCounter);
+// pixi.stage.addChild(fpsCounter);
 
 const entities = gameEntities.concat(menuEntities).concat([scenes]);
 const logicSystems = [
@@ -42,11 +43,11 @@ const logicSystems = [
 ];
 const renderConfig = {
   fps: 60,
-  debug: false,
+  debug: true,
 };
 
 const world = new World(
-  pixi.view,
+  pixi,
   entities,
   logicSystems,
   [renderGame],

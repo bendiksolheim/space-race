@@ -18,7 +18,7 @@ export default logicSystem(
           fn.onClick(world);
         }
       });
-      world.removeEntity(mouse.id);
+      world.removeEntity(mouse);
     });
   }
 );

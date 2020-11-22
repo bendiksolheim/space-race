@@ -1,19 +1,19 @@
 export type Rect = {
-  x1: number;
-  y1: number;
+  x: number;
+  y: number;
   x2: number;
   y2: number;
   width: number;
   height: number;
 };
 
-export function rect(x1: number, y1: number, x2: number, y2: number): Rect {
+export function rect(x: number, y: number, x2: number, y2: number): Rect {
   return {
-    x1,
-    y1,
+    x,
+    y,
     x2,
     y2,
-    width: x2 - x1,
-    height: y2 - y1,
+    width: x2 - x,
+    height: y2 - y,
   };
 }

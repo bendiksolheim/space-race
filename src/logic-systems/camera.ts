@@ -18,8 +18,8 @@ export default logicSystem(
 
     scenePivot.x = playerPosition.x;
     scenePivot.y = playerPosition.y;
-    scenePosition.x = world.canvas.width / 2;
-    scenePosition.y = world.canvas.height / 2;
+    scenePosition.x = world.pixi.view.width / 2;
+    scenePosition.y = world.pixi.view.height / 2;
     sceneRotation.angle = -playerRotation.angle;
   }
 );

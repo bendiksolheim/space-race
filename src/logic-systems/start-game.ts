@@ -13,7 +13,7 @@ export default logicSystem(
   },
   (entities, world) => {
     entities.events.forEach((event) => {
-      world.removeEntity(event.id);
+      world.removeEntity(event);
 
       entities.players.forEach((player) => {
         const position = player.get(Position);
@@ -22,8 +22,8 @@ export default logicSystem(
         const scenes = entities.scenes[0].get(Scenes);
         velocity.forward = 0;
         player.add(new Alive());
-        position.x = world.canvas.width / 2;
-        position.y = world.canvas.height / 2;
+        position.x = 12.5; //world.canvas.width / 2;
+        position.y = 16; //world.canvas.height / 2;
         rotation.angle = 0;
         scenes.menu.visible = false;
         player.add(new Alive());
