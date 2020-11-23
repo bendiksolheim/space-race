@@ -21,7 +21,6 @@ export default logicSystem(
         const rotation = player.get(Rotation);
         const scenes = entities.scenes[0].get(Scenes);
         velocity.forward = 0;
-        player.add(new Alive());
         position.x = 12.5; //world.canvas.width / 2;
         position.y = 16; //world.canvas.height / 2;
         rotation.angle = 0;
