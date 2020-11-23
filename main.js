@@ -44674,6 +44674,26 @@ exports.default = Controlled;
 
 /***/ }),
 
+/***/ "./src/components/events/end-game.ts":
+/*!*******************************************!*\
+  !*** ./src/components/events/end-game.ts ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class EndGame {
+    constructor() {
+        this.name = "end-game";
+    }
+}
+exports.default = EndGame;
+
+
+/***/ }),
+
 /***/ "./src/components/events/start-game.ts":
 /*!*********************************************!*\
   !*** ./src/components/events/start-game.ts ***!
@@ -44807,6 +44827,7 @@ const menu_scene_1 = __importDefault(__webpack_require__(/*! ./pixi/menu-scene *
 const game_1 = __importDefault(__webpack_require__(/*! ./render-systems/game */ "./src/render-systems/game.ts"));
 const mouse_listener_1 = __importDefault(__webpack_require__(/*! ./logic-systems/mouse-listener */ "./src/logic-systems/mouse-listener.ts"));
 const start_game_1 = __importDefault(__webpack_require__(/*! ./logic-systems/start-game */ "./src/logic-systems/start-game.ts"));
+const end_game_1 = __importDefault(__webpack_require__(/*! ./logic-systems/end-game */ "./src/logic-systems/end-game.ts"));
 const scenes_1 = __importDefault(__webpack_require__(/*! ./components/scenes */ "./src/components/scenes.ts"));
 const pixi_fps_1 = __importDefault(__webpack_require__(/*! pixi-fps */ "./node_modules/pixi-fps/dist/index.js"));
 const camera_1 = __importDefault(__webpack_require__(/*! ./logic-systems/camera */ "./src/logic-systems/camera.ts"));
@@ -44827,6 +44848,7 @@ const entities = gameEntities.concat(menuEntities).concat([scenes]);
 const logicSystems = [
     mouse_listener_1.default,
     start_game_1.default,
+    end_game_1.default,
     thrusters_1.default,
     physics_1.default,
     collision_1.default,
@@ -44835,7 +44857,7 @@ const logicSystems = [
 ];
 const renderConfig = {
     fps: 60,
-    debug: true,
+    debug: false,
 };
 const world = new ecs_1.World(pixi, entities, logicSystems, [game_1.default], renderConfig);
 world.start();
@@ -44921,6 +44943,7 @@ const polygon_1 = __importDefault(__webpack_require__(/*! ../components/polygon 
 const line_1 = __webpack_require__(/*! ../primitives/line */ "./src/primitives/line.ts");
 const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
 const game_scene_1 = __importDefault(__webpack_require__(/*! ../components/game-scene */ "./src/components/game-scene.ts"));
+const end_game_1 = __importDefault(__webpack_require__(/*! ../components/events/end-game */ "./src/components/events/end-game.ts"));
 exports.default = ecs_1.logicSystem({
     player: [controlled_1.default, alive_1.default, polygon_1.default, ecs_1.Displayable],
     objs: [collidable_1.default, polygon_1.default, ecs_1.Displayable],
@@ -44948,8 +44971,10 @@ exports.default = ecs_1.logicSystem({
             const playerLines = makeLines(rotatedPlayer);
             const objLines = makeLines(rotatedObj);
             const collision = cartesian(objLines, playerLines).some((v) => intersection_1.lineIntersects(v[0], v[1]));
-            if (Math.random() < 0.05) {
-                console.log(collision);
+            if (collision) {
+                const entity = new ecs_1.Entity();
+                entity.add(new end_game_1.default());
+                world.addEntity(entity);
             }
         }
     });
@@ -44981,6 +45006,39 @@ function zip(a, b) {
 function cartesian(a, b) {
     return a.map((t) => b.map((u) => [t, u])).flat();
 }
+
+
+/***/ }),
+
+/***/ "./src/logic-systems/end-game.ts":
+/*!***************************************!*\
+  !*** ./src/logic-systems/end-game.ts ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
+const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
+const end_game_1 = __importDefault(__webpack_require__(/*! ../components/events/end-game */ "./src/components/events/end-game.ts"));
+const scenes_1 = __importDefault(__webpack_require__(/*! ../components/scenes */ "./src/components/scenes.ts"));
+exports.default = ecs_1.logicSystem({
+    players: [alive_1.default],
+    events: [end_game_1.default],
+    scenes: [scenes_1.default],
+}, (entities, world) => {
+    entities.events.forEach((event) => {
+        const scenes = entities.scenes[0].get(scenes_1.default);
+        world.removeEntity(event);
+        entities.players.forEach((player) => player.remove(alive_1.default));
+        scenes.menu.visible = true;
+    });
+});
 
 
 /***/ }),
@@ -45140,7 +45198,6 @@ exports.default = ecs_1.logicSystem({
             const rotation = player.get(ecs_1.Rotation);
             const scenes = entities.scenes[0].get(scenes_1.default);
             velocity.forward = 0;
-            player.add(new alive_1.default());
             position.x = 12.5; //world.canvas.width / 2;
             position.y = 16; //world.canvas.height / 2;
             rotation.angle = 0;
