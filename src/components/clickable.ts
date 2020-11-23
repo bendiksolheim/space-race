@@ -1,4 +1,4 @@
-import { Component, World } from "ecs";
+import { Component, World } from "@bendiksolheim/ecs";
 
 type OnClick = (world: World) => void;
 

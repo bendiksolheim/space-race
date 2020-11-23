@@ -1,4 +1,4 @@
-import { World, Entity } from "ecs";
+import { World, Entity } from "@bendiksolheim/ecs";
 import collision from "./logic-systems/collision";
 
 import thrusters from "./logic-systems/thrusters";

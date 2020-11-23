@@ -7,7 +7,7 @@ import {
   Displayable,
   Rotation,
   Pivot,
-} from "ecs";
+} from "@bendiksolheim/ecs";
 import * as PIXI from "pixi.js";
 import boundingBox from "../math/bounding-box";
 import { Rect, rect } from "../primitives/rect";

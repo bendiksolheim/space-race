@@ -1,4 +1,4 @@
-import { Component } from "ecs";
+import { Component } from "@bendiksolheim/ecs";
 import { Vec2D, vec2D } from "../primitives/vec2d";
 
 class Polygon implements Component {

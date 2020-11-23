@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import { Entity, PixiEntity, World } from "ecs";
+import { Entity, PixiEntity, World } from "@bendiksolheim/ecs";
 import StartGame from "../components/events/start-game";
 import Clickable from "../components/clickable";
 

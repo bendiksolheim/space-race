@@ -1,4 +1,4 @@
-import { Component, Key } from "ecs";
+import { Component, Key } from "@bendiksolheim/ecs";
 
 class Controlled implements Component {
   name = "controlled";

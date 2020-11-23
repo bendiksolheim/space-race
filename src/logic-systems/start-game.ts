@@ -1,7 +1,7 @@
 import StartGame from "../components/events/start-game";
 import Controlled from "../components/controlled";
 import Scenes from "../components/scenes";
-import { logicSystem, Key, Position, Rotation } from "ecs";
+import { logicSystem, Key, Position, Rotation } from "@bendiksolheim/ecs";
 import Alive from "../components/alive";
 import Velocity from "../components/velocity";
 

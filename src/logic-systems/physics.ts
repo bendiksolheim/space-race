@@ -1,4 +1,10 @@
-import { Entity, logicSystem, World, Position, Rotation } from "ecs";
+import {
+  Entity,
+  logicSystem,
+  World,
+  Position,
+  Rotation,
+} from "@bendiksolheim/ecs";
 import Velocity from "../components/velocity";
 import { Rect, rect } from "../primitives/rect";
 

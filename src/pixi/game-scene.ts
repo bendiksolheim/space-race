@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import { Entity, PixiEntity, Key } from "ecs";
+import { Entity, PixiEntity, Key } from "@bendiksolheim/ecs";
 import Collidable from "../components/collidable";
 import Controlled from "../components/controlled";
 import Velocity from "../components/velocity";

@@ -1,4 +1,4 @@
-import { Entity, Key, logicSystem, Rotation, World } from "ecs";
+import { Entity, Key, logicSystem, Rotation, World } from "@bendiksolheim/ecs";
 import Controlled from "../components/controlled";
 import Velocity from "../components/velocity";
 import Alive from "../components/alive";

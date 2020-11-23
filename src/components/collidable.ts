@@ -1,4 +1,4 @@
-import { Component } from "ecs";
+import { Component } from "@bendiksolheim/ecs";
 
 class Collidable implements Component {
   name = "collision";

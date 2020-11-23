@@ -1,4 +1,4 @@
-import { Position, Size } from "ecs";
+import { Position, Size } from "@bendiksolheim/ecs";
 import { Rect } from "../primitives/rect";
 
 export default function boundingBox(position: Position, size: Size): Rect {

@@ -1,4 +1,11 @@
-import { Pivot, Position, Displayable, logicSystem, Rotation, Size } from "ecs";
+import {
+  Pivot,
+  Position,
+  Displayable,
+  logicSystem,
+  Rotation,
+  Size,
+} from "@bendiksolheim/ecs";
 import Controlled from "../components/controlled";
 import GameScene from "../components/game-scene";
 

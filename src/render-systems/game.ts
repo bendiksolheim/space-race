@@ -1,4 +1,10 @@
-import { Displayable, Pivot, Position, renderSystem, Rotation } from "ecs";
+import {
+  Displayable,
+  Pivot,
+  Position,
+  renderSystem,
+  Rotation,
+} from "@bendiksolheim/ecs";
 
 export default renderSystem(
   { displayables: [Displayable] },

@@ -1,4 +1,4 @@
-import { Component } from "ecs";
+import { Component } from "@bendiksolheim/ecs";
 
 class Velocity implements Component {
   name = "velocity";

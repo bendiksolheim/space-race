@@ -1,4 +1,4 @@
-import { Component } from "ecs";
+import { Component } from "@bendiksolheim/ecs";
 import * as PIXI from "pixi.js";
 
 class Scenes implements Component {

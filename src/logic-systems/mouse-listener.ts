@@ -1,5 +1,11 @@
 import Clickable from "../components/clickable";
-import { logicSystem, MouseClick, Position, Size, Displayable } from "ecs";
+import {
+  logicSystem,
+  MouseClick,
+  Position,
+  Size,
+  Displayable,
+} from "@bendiksolheim/ecs";
 import boundingBox from "../math/bounding-box";
 import { Vec2D, vec2D } from "../primitives/vec2d";
 import { containsPoint } from "../math/math";

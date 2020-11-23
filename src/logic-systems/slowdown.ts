@@ -1,4 +1,4 @@
-import { logicSystem } from "ecs";
+import { logicSystem } from "@bendiksolheim/ecs";
 import Velocity from "../components/velocity";
 
 export default logicSystem({ thrusters: [Velocity] }, (entities, world) => {
