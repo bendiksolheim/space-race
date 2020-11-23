@@ -86,6 +86,902 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/@bendiksolheim/ecs/dist/debug/debug-entities.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/debug/debug-entities.js ***!
+  \**********************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var pixi_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js");
+/* harmony import */ var _pixi_pixi_entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../pixi/pixi-entity */ "./node_modules/@bendiksolheim/ecs/dist/pixi/pixi-entity.js");
+/* harmony import */ var _logic_system__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../logic-system */ "./node_modules/@bendiksolheim/ecs/dist/logic-system.js");
+/* harmony import */ var _pixi_displayable__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../pixi/displayable */ "./node_modules/@bendiksolheim/ecs/dist/pixi/displayable.js");
+/* harmony import */ var _debug__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./debug */ "./node_modules/@bendiksolheim/ecs/dist/debug/debug.js");
+/* harmony import */ var _debugged__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./debugged */ "./node_modules/@bendiksolheim/ecs/dist/debug/debugged.js");
+
+
+
+
+
+
+/* harmony default export */ __webpack_exports__["default"] = (Object(_logic_system__WEBPACK_IMPORTED_MODULE_2__["default"])({
+    debug: [_debug__WEBPACK_IMPORTED_MODULE_4__["default"], _pixi_displayable__WEBPACK_IMPORTED_MODULE_3__["default"]],
+    debugged: [_debugged__WEBPACK_IMPORTED_MODULE_5__["default"], _pixi_displayable__WEBPACK_IMPORTED_MODULE_3__["default"]],
+}, (entities, world) => {
+    entities.debugged.forEach((debugged) => {
+        const debug = entities.debug.find((d) => d.get(_debug__WEBPACK_IMPORTED_MODULE_4__["default"]).entityId === debugged.id);
+        if (debug) {
+            const debuggedRef = debugged.get(_pixi_displayable__WEBPACK_IMPORTED_MODULE_3__["default"]).ref;
+            const bounds = debuggedRef.getBounds();
+            const ref = debug.get(_pixi_displayable__WEBPACK_IMPORTED_MODULE_3__["default"]).ref;
+            ref.clear();
+            ref.lineStyle(1, 0xff0000, 1, 0);
+            ref.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            ref.visible = isVisible(debuggedRef);
+        }
+        else if (debugged.get(_pixi_displayable__WEBPACK_IMPORTED_MODULE_3__["default"]).ref.children.length === 0) {
+            const bounds = debugged.get(_pixi_displayable__WEBPACK_IMPORTED_MODULE_3__["default"]).ref.getBounds();
+            const g = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Graphics"]();
+            g.name = `${debugged.get(_pixi_displayable__WEBPACK_IMPORTED_MODULE_3__["default"]).ref.name}-debug`;
+            g.lineStyle(1, 0xff0000, 1, 0);
+            g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            const entity = new _pixi_pixi_entity__WEBPACK_IMPORTED_MODULE_1__["default"]();
+            entity.add(new _debug__WEBPACK_IMPORTED_MODULE_4__["default"](debugged.id));
+            entity.addDisplayObject(g, world.pixi.stage.getChildByName("debug-container"));
+            world.addEntity(entity);
+        }
+    });
+}));
+function isVisible(ref) {
+    let cur = ref;
+    do {
+        if (!cur.visible) {
+            return false;
+        }
+        cur = cur.parent;
+    } while (cur !== null);
+    return true;
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/debug/debug.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/debug/debug.js ***!
+  \*************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class Debug {
+    constructor(entityId) {
+        this.name = "debug";
+        this.entityId = entityId;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Debug);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/debug/debugged.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/debug/debugged.js ***!
+  \****************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class Debugged {
+    constructor() {
+        this.name = "debugged";
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Debugged);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/entity.js":
+/*!********************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/entity.js ***!
+  \********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Entity; });
+/**
+ * Bundles together one or more components to create a game entity
+ * Usage:
+ *
+ * ```
+ * const entity = new Entity();
+ * entity.add(new Health(20));
+ * ```
+ */
+class Entity {
+    /**
+     */
+    constructor() {
+        this.id = randomId();
+        this.components = new Map();
+    }
+    /**
+     * Add a component to this entity.
+     */
+    add(component) {
+        const i = component.constructor;
+        this.components.set(i, component);
+        if (this.world) {
+            this.world.removeEntity(this);
+            this.world.addEntity(this);
+        }
+    }
+    /**
+     * Remove a component from this entity.
+     */
+    remove(component) {
+        this.components.delete(component);
+        if (this.world) {
+            this.world.removeEntity(this);
+            this.world.addEntity(this);
+        }
+    }
+    /**
+     * @param component The constructor of a component
+     * @returns true | false depending on if this entity has the specified component
+     */
+    has(component) {
+        return this.components.has(component);
+    }
+    /**
+     * Executes the provided function if this entity has the specified component
+     *
+     * @param component The constructor of a component
+     * @param fn A function to be executed if the entity has the component
+     */
+    ifHas(component, fn) {
+        if (this.has(component)) {
+            fn(this.get(component));
+        }
+    }
+    /**
+     * Returns the component instance for the specified component. Useful if you
+     * need to modify values on the component
+     *
+     * @param component The constructor of a component
+     * @returns Returns the component instance
+     */
+    get(component) {
+        return this.components.get(component);
+    }
+    register(world) {
+        this.world = world;
+    }
+    print() {
+        const components = [...this.components];
+        console.log(JSON.stringify({ id: this.id, components }, null, 4));
+    }
+}
+let counter = 0;
+function randomId() {
+    let _counter = counter;
+    counter += 1;
+    return (Date.now().toString(16) +
+        ((Math.random() * 100000000) | 0).toString(16) +
+        _counter);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/events/mouse-click.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/events/mouse-click.js ***!
+  \********************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * A component used to store mouse coordinates in case of mouse click
+ */
+class MouseClick {
+    constructor(x, y) {
+        this.name = "mouse-click";
+        this.x = x;
+        this.y = y;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (MouseClick);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/index.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/index.js ***!
+  \*******************************************************/
+/*! exports provided: Entity, logicSystem, renderSystem, World, Key, PixiEntity, Displayable, Position, Rotation, Pivot, Size, MouseClick */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entity */ "./node_modules/@bendiksolheim/ecs/dist/entity.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Entity", function() { return _entity__WEBPACK_IMPORTED_MODULE_0__["default"]; });
+
+/* harmony import */ var _render_system__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render-system */ "./node_modules/@bendiksolheim/ecs/dist/render-system.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "renderSystem", function() { return _render_system__WEBPACK_IMPORTED_MODULE_1__["default"]; });
+
+/* harmony import */ var _logic_system__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./logic-system */ "./node_modules/@bendiksolheim/ecs/dist/logic-system.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "logicSystem", function() { return _logic_system__WEBPACK_IMPORTED_MODULE_2__["default"]; });
+
+/* harmony import */ var _world__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./world */ "./node_modules/@bendiksolheim/ecs/dist/world.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "World", function() { return _world__WEBPACK_IMPORTED_MODULE_3__["default"]; });
+
+/* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./keyboard */ "./node_modules/@bendiksolheim/ecs/dist/keyboard.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Key", function() { return _keyboard__WEBPACK_IMPORTED_MODULE_4__["Key"]; });
+
+/* harmony import */ var _pixi_pixi_entity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pixi/pixi-entity */ "./node_modules/@bendiksolheim/ecs/dist/pixi/pixi-entity.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PixiEntity", function() { return _pixi_pixi_entity__WEBPACK_IMPORTED_MODULE_5__["default"]; });
+
+/* harmony import */ var _pixi_displayable__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pixi/displayable */ "./node_modules/@bendiksolheim/ecs/dist/pixi/displayable.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Displayable", function() { return _pixi_displayable__WEBPACK_IMPORTED_MODULE_6__["default"]; });
+
+/* harmony import */ var _pixi_rotation__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./pixi/rotation */ "./node_modules/@bendiksolheim/ecs/dist/pixi/rotation.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rotation", function() { return _pixi_rotation__WEBPACK_IMPORTED_MODULE_7__["default"]; });
+
+/* harmony import */ var _pixi_position__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./pixi/position */ "./node_modules/@bendiksolheim/ecs/dist/pixi/position.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Position", function() { return _pixi_position__WEBPACK_IMPORTED_MODULE_8__["default"]; });
+
+/* harmony import */ var _pixi_size__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./pixi/size */ "./node_modules/@bendiksolheim/ecs/dist/pixi/size.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Size", function() { return _pixi_size__WEBPACK_IMPORTED_MODULE_9__["default"]; });
+
+/* harmony import */ var _events_mouse_click__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./events/mouse-click */ "./node_modules/@bendiksolheim/ecs/dist/events/mouse-click.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MouseClick", function() { return _events_mouse_click__WEBPACK_IMPORTED_MODULE_10__["default"]; });
+
+/* harmony import */ var _pixi_pivot__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./pixi/pivot */ "./node_modules/@bendiksolheim/ecs/dist/pixi/pivot.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Pivot", function() { return _pixi_pivot__WEBPACK_IMPORTED_MODULE_11__["default"]; });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/keyboard.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/keyboard.js ***!
+  \**********************************************************/
+/*! exports provided: Key, default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Key", function() { return Key; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Keyboard; });
+/**
+ * Enum used to define keyboard keys
+ */
+var Key;
+(function (Key) {
+    Key["Up"] = "ArrowUp";
+    Key["Down"] = "ArrowDown";
+    Key["Left"] = "ArrowLeft";
+    Key["Right"] = "ArrowRight";
+    Key["Escape"] = "Escape";
+    Key["Enter"] = "Enter";
+    Key["Space"] = " ";
+    Key["A"] = "a";
+    Key["B"] = "b";
+    Key["C"] = "c";
+    Key["D"] = "d";
+    Key["E"] = "e";
+    Key["F"] = "f";
+    Key["G"] = "g";
+    Key["H"] = "h";
+    Key["I"] = "i";
+    Key["J"] = "j";
+    Key["K"] = "k";
+    Key["L"] = "l";
+    Key["M"] = "m";
+    Key["N"] = "n";
+    Key["O"] = "o";
+    Key["P"] = "p";
+    Key["Q"] = "q";
+    Key["R"] = "r";
+    Key["S"] = "s";
+    Key["T"] = "t";
+    Key["U"] = "u";
+    Key["V"] = "v";
+    Key["W"] = "w";
+    Key["X"] = "x";
+    Key["Y"] = "y";
+    Key["Z"] = "z";
+    Key["\u00C6"] = "\u00E6";
+    Key["\u00D8"] = "\u00F8";
+    Key["\u00C5"] = "\u00E5";
+    Key["COMMA"] = ",";
+    Key["PERIOD"] = ".";
+    Key["ONE"] = "1";
+    Key["TWO"] = "2";
+    Key["THREE"] = "3";
+    Key["FOUR"] = "4";
+    Key["FIVE"] = "5";
+    Key["SIX"] = "6";
+    Key["SEVEN"] = "7";
+    Key["EIGHT"] = "8";
+    Key["NINE"] = "9";
+    Key["ZERO"] = "0";
+    Key["PLUS"] = "+";
+    Key["MINUS"] = "-";
+})(Key || (Key = {}));
+function reverseEnum(e) {
+    const ret = {};
+    Object.keys(e).forEach((k) => {
+        const v = e[k];
+        ret[v] = k;
+    });
+    return ret;
+}
+const reverseMapping = reverseEnum(Key);
+/**
+ * Keeps track of keyboard state, and can be asked for pressed keys
+ * Intended to be accessed through a World instance:
+ *
+ * ```
+ * if (world.keyboard.pressed(Key.Up)) {
+ *   console.log("Arrow up pressed")
+ * }
+ *```
+ */
+class Keyboard {
+    constructor() {
+        this.state = new Map();
+    }
+    press(key) {
+        this.state.set(key, true);
+    }
+    release(key) {
+        this.state.set(key, false);
+    }
+    /**
+     * @param key A key to query for state
+     * @returns true | false depending on if key is pressed
+     */
+    pressed(key) {
+        return this.state.get(key) || false;
+    }
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/logic-system.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/logic-system.js ***!
+  \**************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Initializer for a logic system. A logic system performs some kind of game logic
+ * in your game, e.g. checks for collission. A logic system is executed N times per frame
+ * depending on what you set your FPS to be. An FPS value of 60 means it is executed on average
+ * once per frame, while an FPS value of 120 will execute it twice.
+ * Usage:
+ *
+ * ```
+ * const logicSystem = logicystem(
+ *     { myEntities: [ComponentOne, ComponentTwo] },
+ *     (entities: Record<string, Entity[]>, world: World) => {
+ *         entities.myEntities.forEach(entity => {
+ *             console.log(entity.has(ComponentOne)); // -> true
+ *             console.log(entity.has(ComponentTwo)); // -> true
+ *         });
+ *     }
+ * );
+ * ```
+ */
+function logicSystem(filter, tick) {
+    return {
+        filter,
+        tick,
+    };
+}
+/* harmony default export */ __webpack_exports__["default"] = (logicSystem);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/make-entities.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/make-entities.js ***!
+  \***************************************************************/
+/*! exports provided: makeEntities */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "makeEntities", function() { return makeEntities; });
+function makeEntities(entities) {
+    const initial = {};
+    return entities.reduce((prev, cur) => {
+        prev[cur.id] = cur;
+        return prev;
+    }, initial);
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/pixi/displayable.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/pixi/displayable.js ***!
+  \******************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Holds a PIXI.Container instance
+ */
+class Displayable {
+    /**
+     */
+    constructor(ref) {
+        this.name = "displayable";
+        this.ref = ref;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Displayable);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/pixi/pivot.js":
+/*!************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/pixi/pivot.js ***!
+  \************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Pixi pivot point
+ */
+class Pivot {
+    constructor(x, y) {
+        this.name = "pivot";
+        this.x = x;
+        this.y = y;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Pivot);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/pixi/pixi-entity.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/pixi/pixi-entity.js ***!
+  \******************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../entity */ "./node_modules/@bendiksolheim/ecs/dist/entity.js");
+/* harmony import */ var _position__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./position */ "./node_modules/@bendiksolheim/ecs/dist/pixi/position.js");
+/* harmony import */ var _displayable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./displayable */ "./node_modules/@bendiksolheim/ecs/dist/pixi/displayable.js");
+/* harmony import */ var _rotation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./rotation */ "./node_modules/@bendiksolheim/ecs/dist/pixi/rotation.js");
+/* harmony import */ var _size__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./size */ "./node_modules/@bendiksolheim/ecs/dist/pixi/size.js");
+/* harmony import */ var _pivot__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pivot */ "./node_modules/@bendiksolheim/ecs/dist/pixi/pivot.js");
+/* harmony import */ var _debug_debugged__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../debug/debugged */ "./node_modules/@bendiksolheim/ecs/dist/debug/debugged.js");
+/* harmony import */ var _debug_debug__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../debug/debug */ "./node_modules/@bendiksolheim/ecs/dist/debug/debug.js");
+
+
+
+
+
+
+
+
+/**
+ * A special entity which automatically adds the components Position,
+ * Displayable, Rotation and Size, and has the ability to add an object
+ * to a Pixi container.
+ */
+class PixiEntity extends _entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
+    /**
+     * Makes this entity a renderable entity added to a pixi container.
+     * The Displayable component should not be mutated in a logic system.
+     * Instead, mutate Position, Rotatin and Size in logic systems and copy the values into the Displayable component in a render system.
+     */
+    addDisplayObject(obj, container) {
+        container.addChild(obj);
+        this.add(new _position__WEBPACK_IMPORTED_MODULE_1__["default"](obj.x, obj.y));
+        this.add(new _displayable__WEBPACK_IMPORTED_MODULE_2__["default"](obj));
+        this.add(new _rotation__WEBPACK_IMPORTED_MODULE_3__["default"](obj.rotation));
+        this.add(new _size__WEBPACK_IMPORTED_MODULE_4__["default"](obj.width, obj.height));
+        this.add(new _pivot__WEBPACK_IMPORTED_MODULE_5__["default"](obj.pivot.x, obj.pivot.y));
+        if (!this.get(_debug_debug__WEBPACK_IMPORTED_MODULE_7__["default"])) {
+            this.add(new _debug_debugged__WEBPACK_IMPORTED_MODULE_6__["default"]());
+        }
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (PixiEntity);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/pixi/position.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/pixi/position.js ***!
+  \***************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Holds a position with x and y coordinates
+ */
+class Position {
+    /**
+     */
+    constructor(x, y) {
+        this.name = "position";
+        this.x = x;
+        this.y = y;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Position);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/pixi/rotation.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/pixi/rotation.js ***!
+  \***************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Holds a rotation (in radians or degrees, that’s up to you)
+ */
+class Rotation {
+    /**
+     */
+    constructor(angle = 0) {
+        this.name = "rotation";
+        this.angle = angle;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Rotation);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/pixi/size.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/pixi/size.js ***!
+  \***********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Holds a size in a 2D plane (width and height)
+ */
+class Size {
+    /**
+     */
+    constructor(width, height) {
+        this.name = "size";
+        this.width = width;
+        this.height = height;
+    }
+}
+/* harmony default export */ __webpack_exports__["default"] = (Size);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/render-system.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/render-system.js ***!
+  \***************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/**
+ * Initializer for a render system. A render system performs some kind of rendering
+ * in your game. Where a logic system may be run N times per game frame, a render
+ * system will always be executed exactly once, and always after every logic system.
+ * A render system should ideally not calculate stuff, only perform rendering.
+ *
+ * A render system is passed a `lag` parameter. This parameter tells how "far into"
+ * the frame you are. It is a value between 0 (start of frame) and 1 (end of frame).
+ * This can be used to compensate for the time your logic systems has spent during
+ * a frame.
+ * ```
+ * const renderSystem = renderSystem(
+ *     { renderable: [Renderable] },
+ *     (entities: Record<string, Entity[]>, lag: number, world: World) {
+ *         entities.renderable.forEach(entity => {
+ *             console.log(entity.has(Renderable)); // -> true
+ *         })
+ *     }
+ * )
+ * ```
+ */
+function renderSystem(filter, tick) {
+    return {
+        filter,
+        tick,
+    };
+}
+/* harmony default export */ __webpack_exports__["default"] = (renderSystem);
+
+
+/***/ }),
+
+/***/ "./node_modules/@bendiksolheim/ecs/dist/world.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/@bendiksolheim/ecs/dist/world.js ***!
+  \*******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return World; });
+/* harmony import */ var pixi_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js");
+/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./entity */ "./node_modules/@bendiksolheim/ecs/dist/entity.js");
+/* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./keyboard */ "./node_modules/@bendiksolheim/ecs/dist/keyboard.js");
+/* harmony import */ var _make_entities__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./make-entities */ "./node_modules/@bendiksolheim/ecs/dist/make-entities.js");
+/* harmony import */ var _events_mouse_click__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./events/mouse-click */ "./node_modules/@bendiksolheim/ecs/dist/events/mouse-click.js");
+/* harmony import */ var _debug_debug_entities__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./debug/debug-entities */ "./node_modules/@bendiksolheim/ecs/dist/debug/debug-entities.js");
+
+
+
+
+
+
+const defaultRenderConfig = {
+    fps: 60,
+    debug: false,
+};
+/**
+ * A World ties everything together
+ * Usage:
+ *
+ * ```
+ * const pixi = new PIXI.Application({ width: 600, height: 400});
+ * const entityList = [list(), full(), of(), entities()]
+ * const settings = {
+ *     fps: 60,
+ *     debug: false
+ * }
+ * const world = new World(pixi.view, entityList, [myUpdateSystem], [myRenderSystem], settings);
+ * world.start()
+ * ```
+ *
+ */
+class World {
+    /**
+     * Main constructor
+     */
+    constructor(pixi, entities, logicSystems, renderSystems, renderConfig = defaultRenderConfig) {
+        this.debug = renderConfig.debug;
+        this.pixi = pixi;
+        this.mouse = { x: -100, y: -100, pressed: false };
+        if (this.debug) {
+            pixi.stage.addChild(debugContainer());
+            this.logicSystems = logicSystems.concat(_debug_debug_entities__WEBPACK_IMPORTED_MODULE_5__["default"]);
+        }
+        else {
+            this.logicSystems = logicSystems;
+        }
+        this.renderSystems = renderSystems;
+        this.entities = new Map();
+        this.keyboard = new _keyboard__WEBPACK_IMPORTED_MODULE_2__["default"]();
+        this.renderState = {
+            fps: renderConfig.fps,
+            previous: 0,
+            frameDuration: 1000 / renderConfig.fps,
+            lag: 0,
+        };
+        entities.forEach((entity) => {
+            entity.register(this);
+        });
+        this.createEntityMapping(Object(_make_entities__WEBPACK_IMPORTED_MODULE_3__["makeEntities"])(entities));
+        this.createMouseListener();
+        this.createKeyboardListener();
+    }
+    /**
+     * Adds an entity to an already instantiated world. Updates system filters.
+     */
+    addEntity(entity) {
+        entity.register(this);
+        this.entities.forEach((entities, filter) => {
+            if (matches(entity, filter)) {
+                entities.set(entity.id, entity);
+            }
+        });
+    }
+    /**
+     * Removes an entity from an already instantiated world.
+     */
+    removeEntity(entity) {
+        this.entities.forEach((value) => {
+            value.delete(entity.id);
+        });
+    }
+    /**
+     * Starts the game loop. Runs until stopped.
+     */
+    start() {
+        log(this.debug, "Starting rendering", this.renderState);
+        this.tick();
+    }
+    tick(timestamp) {
+        if (!timestamp) {
+            timestamp = 0;
+        }
+        // Calculate time since last frame
+        let elapsed = timestamp - this.renderState.previous;
+        // Handle case where time since last frame is unreasonably high
+        if (elapsed > 1000) {
+            elapsed = this.renderState.frameDuration;
+        }
+        // Add elapsed time to lag counter
+        this.renderState.lag += elapsed;
+        let count = 0;
+        while (this.renderState.lag >= this.renderState.frameDuration) {
+            count += 1;
+            this.logicSystems.forEach((system) => {
+                const entities = Object.entries(system.filter).reduce((acc, cur) => {
+                    const key = cur[0];
+                    const filters = cur[1];
+                    const entities = Array.from(this.entities.get(filters).values());
+                    acc[key] = entities;
+                    return acc;
+                }, {});
+                return system.tick(entities, this);
+            });
+            this.renderState.lag -= this.renderState.frameDuration;
+        }
+        const lagOffset = this.renderState.lag / this.renderState.frameDuration;
+        this.renderSystems.forEach((system) => {
+            const entities = Object.entries(system.filter).reduce((acc, cur) => {
+                const key = cur[0];
+                const filters = cur[1];
+                const entities = Array.from(this.entities.get(filters).values());
+                acc[key] = entities;
+                return acc;
+            }, {});
+            return system.tick(entities, lagOffset, this);
+        });
+        this.renderState.previous = timestamp;
+        requestAnimationFrame((n) => this.tick(n));
+    }
+    createEntityMapping(entities) {
+        log(this.debug, "Mapping logic systems");
+        this.logicSystems.forEach((system) => {
+            log(this.debug, "Creating mapping for system");
+            Object.entries(system.filter).forEach(([key, filter]) => {
+                log(this.debug, `Mapping for ${key}`);
+                const entityMap = new Map();
+                filterEntities(entities, filter).forEach((entity) => {
+                    entityMap.set(entity.id, entity);
+                });
+                this.entities.set(filter, entityMap);
+            });
+        });
+        log(this.debug, "Mapping render systems");
+        this.renderSystems.forEach((system) => {
+            log(this.debug, "Creating mapping for system");
+            Object.entries(system.filter).forEach(([key, filter]) => {
+                log(this.debug, `Mapping for ${key}`);
+                const entityMap = new Map();
+                filterEntities(entities, filter).forEach((entity) => {
+                    entityMap.set(entity.id, entity);
+                });
+                this.entities.set(filter, entityMap);
+            });
+        });
+    }
+    createMouseListener() {
+        const canvasRect = this.pixi.view.getBoundingClientRect();
+        this.pixi.view.addEventListener("mousemove", (ev) => {
+            this.mouse.x = ev.clientX - canvasRect.left;
+            this.mouse.y = ev.clientY - canvasRect.top;
+        });
+        this.pixi.view.addEventListener("mousedown", () => {
+            this.mouse.pressed = true;
+        });
+        this.pixi.view.addEventListener("mouseup", () => {
+            this.mouse.pressed = false;
+        });
+        this.pixi.view.addEventListener("click", () => {
+            const e = new _entity__WEBPACK_IMPORTED_MODULE_1__["default"]();
+            e.add(new _events_mouse_click__WEBPACK_IMPORTED_MODULE_4__["default"](this.mouse.x, this.mouse.y));
+            this.addEntity(e);
+        });
+    }
+    createKeyboardListener() {
+        document.body.addEventListener("keydown", (ev) => {
+            this.keyboard.press(ev.key);
+        });
+        document.body.addEventListener("keyup", (ev) => {
+            this.keyboard.release(ev.key);
+        });
+    }
+}
+function filterEntities(entities, filter) {
+    return Object.values(entities).filter((entity) => matches(entity, filter));
+}
+function matches(entity, filter) {
+    return filter.every((component) => entity.has(component));
+}
+function log(debug, ...msg) {
+    if (debug) {
+        const messages = msg.map((m) => {
+            if (typeof m === "object") {
+                return JSON.stringify(m);
+            }
+            else if (typeof m === "string") {
+                return m;
+            }
+            else {
+                return String(m);
+            }
+        });
+        console.log.call(null, messages);
+    }
+}
+function debugContainer() {
+    const container = new pixi_js__WEBPACK_IMPORTED_MODULE_0__["Container"]();
+    container.name = "debug-container";
+    container.zIndex = Number.MAX_SAFE_INTEGER;
+    return container;
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/@pixi/accessibility/lib/accessibility.es.js":
 /*!******************************************************************!*\
   !*** ./node_modules/@pixi/accessibility/lib/accessibility.es.js ***!
@@ -36584,781 +37480,6 @@ earcut.flatten = function (data) {
 
 /***/ }),
 
-/***/ "./node_modules/ecs/dist/entity.js":
-/*!*****************************************!*\
-  !*** ./node_modules/ecs/dist/entity.js ***!
-  \*****************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Entity; });
-/**
- * Bundles together one or more components to create a game entity
- * Usage:
- *
- * ```
- * const entity = new Entity();
- * entity.add(new Health(20));
- * ```
- */
-class Entity {
-    /**
-     */
-    constructor() {
-        this.id = randomId();
-        this.components = new Map();
-    }
-    /**
-     * Add a component to this entity.
-     */
-    add(component) {
-        const i = component.constructor;
-        this.components.set(i, component);
-        if (this.world) {
-            this.world.removeEntity(this.id);
-            this.world.addEntity(this);
-        }
-    }
-    /**
-     * Remove a component from this entity.
-     */
-    remove(component) {
-        this.components.delete(component);
-        if (this.world) {
-            this.world.removeEntity(this.id);
-            this.world.addEntity(this);
-        }
-    }
-    /**
-     * @param component The constructor of a component
-     * @returns true | false depending on if this entity has the specified component
-     */
-    has(component) {
-        return this.components.has(component);
-    }
-    /**
-     * Executes the provided function if this entity has the specified component
-     *
-     * @param component The constructor of a component
-     * @param fn A function to be executed if the entity has the component
-     */
-    ifHas(component, fn) {
-        if (this.has(component)) {
-            fn(this.get(component));
-        }
-    }
-    /**
-     * Returns the component instance for the specified component. Useful if you
-     * need to modify values on the component
-     *
-     * @param component The constructor of a component
-     * @returns Returns the component instance
-     */
-    get(component) {
-        return this.components.get(component);
-    }
-    register(world) {
-        this.world = world;
-    }
-    print() {
-        const components = [...this.components];
-        console.log(JSON.stringify({ id: this.id, components }, null, 4));
-    }
-}
-let counter = 0;
-function randomId() {
-    let _counter = counter;
-    counter += 1;
-    return (Date.now().toString(16) +
-        ((Math.random() * 100000000) | 0).toString(16) +
-        _counter);
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/events/mouse-click.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/ecs/dist/events/mouse-click.js ***!
-  \*****************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * A component used to store mouse coordinates in case of mouse click
- */
-class MouseClick {
-    constructor(x, y) {
-        this.name = "mouse-click";
-        this.x = x;
-        this.y = y;
-    }
-}
-/* harmony default export */ __webpack_exports__["default"] = (MouseClick);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/index.js":
-/*!****************************************!*\
-  !*** ./node_modules/ecs/dist/index.js ***!
-  \****************************************/
-/*! exports provided: Entity, logicSystem, renderSystem, World, Key, PixiEntity, Displayable, Position, Rotation, Pivot, Size, MouseClick */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entity */ "./node_modules/ecs/dist/entity.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Entity", function() { return _entity__WEBPACK_IMPORTED_MODULE_0__["default"]; });
-
-/* harmony import */ var _render_system__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./render-system */ "./node_modules/ecs/dist/render-system.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "renderSystem", function() { return _render_system__WEBPACK_IMPORTED_MODULE_1__["default"]; });
-
-/* harmony import */ var _logic_system__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./logic-system */ "./node_modules/ecs/dist/logic-system.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "logicSystem", function() { return _logic_system__WEBPACK_IMPORTED_MODULE_2__["default"]; });
-
-/* harmony import */ var _world__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./world */ "./node_modules/ecs/dist/world.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "World", function() { return _world__WEBPACK_IMPORTED_MODULE_3__["default"]; });
-
-/* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./keyboard */ "./node_modules/ecs/dist/keyboard.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Key", function() { return _keyboard__WEBPACK_IMPORTED_MODULE_4__["Key"]; });
-
-/* harmony import */ var _pixi_pixi_entity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pixi/pixi-entity */ "./node_modules/ecs/dist/pixi/pixi-entity.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PixiEntity", function() { return _pixi_pixi_entity__WEBPACK_IMPORTED_MODULE_5__["default"]; });
-
-/* harmony import */ var _pixi_displayable__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pixi/displayable */ "./node_modules/ecs/dist/pixi/displayable.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Displayable", function() { return _pixi_displayable__WEBPACK_IMPORTED_MODULE_6__["default"]; });
-
-/* harmony import */ var _pixi_rotation__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./pixi/rotation */ "./node_modules/ecs/dist/pixi/rotation.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Rotation", function() { return _pixi_rotation__WEBPACK_IMPORTED_MODULE_7__["default"]; });
-
-/* harmony import */ var _pixi_position__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./pixi/position */ "./node_modules/ecs/dist/pixi/position.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Position", function() { return _pixi_position__WEBPACK_IMPORTED_MODULE_8__["default"]; });
-
-/* harmony import */ var _pixi_size__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./pixi/size */ "./node_modules/ecs/dist/pixi/size.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Size", function() { return _pixi_size__WEBPACK_IMPORTED_MODULE_9__["default"]; });
-
-/* harmony import */ var _events_mouse_click__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./events/mouse-click */ "./node_modules/ecs/dist/events/mouse-click.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MouseClick", function() { return _events_mouse_click__WEBPACK_IMPORTED_MODULE_10__["default"]; });
-
-/* harmony import */ var _pixi_pivot__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./pixi/pivot */ "./node_modules/ecs/dist/pixi/pivot.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Pivot", function() { return _pixi_pivot__WEBPACK_IMPORTED_MODULE_11__["default"]; });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/keyboard.js":
-/*!*******************************************!*\
-  !*** ./node_modules/ecs/dist/keyboard.js ***!
-  \*******************************************/
-/*! exports provided: Key, default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Key", function() { return Key; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Keyboard; });
-/**
- * Enum used to define keyboard keys
- */
-var Key;
-(function (Key) {
-    Key["Up"] = "ArrowUp";
-    Key["Down"] = "ArrowDown";
-    Key["Left"] = "ArrowLeft";
-    Key["Right"] = "ArrowRight";
-    Key["Escape"] = "Escape";
-    Key["Enter"] = "Enter";
-    Key["Space"] = " ";
-    Key["A"] = "a";
-    Key["B"] = "b";
-    Key["C"] = "c";
-    Key["D"] = "d";
-    Key["E"] = "e";
-    Key["F"] = "f";
-    Key["G"] = "g";
-    Key["H"] = "h";
-    Key["I"] = "i";
-    Key["J"] = "j";
-    Key["K"] = "k";
-    Key["L"] = "l";
-    Key["M"] = "m";
-    Key["N"] = "n";
-    Key["O"] = "o";
-    Key["P"] = "p";
-    Key["Q"] = "q";
-    Key["R"] = "r";
-    Key["S"] = "s";
-    Key["T"] = "t";
-    Key["U"] = "u";
-    Key["V"] = "v";
-    Key["W"] = "w";
-    Key["X"] = "x";
-    Key["Y"] = "y";
-    Key["Z"] = "z";
-    Key["\u00C6"] = "\u00E6";
-    Key["\u00D8"] = "\u00F8";
-    Key["\u00C5"] = "\u00E5";
-    Key["COMMA"] = ",";
-    Key["PERIOD"] = ".";
-    Key["ONE"] = "1";
-    Key["TWO"] = "2";
-    Key["THREE"] = "3";
-    Key["FOUR"] = "4";
-    Key["FIVE"] = "5";
-    Key["SIX"] = "6";
-    Key["SEVEN"] = "7";
-    Key["EIGHT"] = "8";
-    Key["NINE"] = "9";
-    Key["ZERO"] = "0";
-    Key["PLUS"] = "+";
-    Key["MINUS"] = "-";
-})(Key || (Key = {}));
-function reverseEnum(e) {
-    const ret = {};
-    Object.keys(e).forEach((k) => {
-        const v = e[k];
-        ret[v] = k;
-    });
-    return ret;
-}
-const reverseMapping = reverseEnum(Key);
-/**
- * Keeps track of keyboard state, and can be asked for pressed keys
- * Intended to be accessed through a World instance:
- *
- * ```
- * if (world.keyboard.pressed(Key.Up)) {
- *   console.log("Arrow up pressed")
- * }
- *```
- */
-class Keyboard {
-    constructor() {
-        this.state = new Map();
-    }
-    press(key) {
-        this.state.set(key, true);
-    }
-    release(key) {
-        this.state.set(key, false);
-    }
-    /**
-     * @param key A key to query for state
-     * @returns true | false depending on if key is pressed
-     */
-    pressed(key) {
-        return this.state.get(key) || false;
-    }
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/logic-system.js":
-/*!***********************************************!*\
-  !*** ./node_modules/ecs/dist/logic-system.js ***!
-  \***********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * Initializer for a logic system. A logic system performs some kind of game logic
- * in your game, e.g. checks for collission. A logic system is executed N times per frame
- * depending on what you set your FPS to be. An FPS value of 60 means it is executed on average
- * once per frame, while an FPS value of 120 will execute it twice.
- * Usage:
- *
- * ```
- * const logicSystem = logicystem(
- *     { myEntities: [ComponentOne, ComponentTwo] },
- *     (entities: Record<string, Entity[]>, world: World) => {
- *         entities.myEntities.forEach(entity => {
- *             console.log(entity.has(ComponentOne)); // -> true
- *             console.log(entity.has(ComponentTwo)); // -> true
- *         });
- *     }
- * );
- * ```
- */
-function logicSystem(filter, tick) {
-    return {
-        filter,
-        tick,
-    };
-}
-/* harmony default export */ __webpack_exports__["default"] = (logicSystem);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/make-entities.js":
-/*!************************************************!*\
-  !*** ./node_modules/ecs/dist/make-entities.js ***!
-  \************************************************/
-/*! exports provided: makeEntities */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "makeEntities", function() { return makeEntities; });
-function makeEntities(entities) {
-    const initial = {};
-    return entities.reduce((prev, cur) => {
-        prev[cur.id] = cur;
-        return prev;
-    }, initial);
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/pixi/displayable.js":
-/*!***************************************************!*\
-  !*** ./node_modules/ecs/dist/pixi/displayable.js ***!
-  \***************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * Holds a PIXI.DisplayObject instance
- */
-class Displayable {
-    /**
-     */
-    constructor(ref) {
-        this.name = "displayable";
-        this.ref = ref;
-    }
-}
-/* harmony default export */ __webpack_exports__["default"] = (Displayable);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/pixi/pivot.js":
-/*!*********************************************!*\
-  !*** ./node_modules/ecs/dist/pixi/pivot.js ***!
-  \*********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * Pixi pivot point
- */
-class Pivot {
-    constructor(x, y) {
-        this.name = "pivot";
-        this.x = x;
-        this.y = y;
-    }
-}
-/* harmony default export */ __webpack_exports__["default"] = (Pivot);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/pixi/pixi-entity.js":
-/*!***************************************************!*\
-  !*** ./node_modules/ecs/dist/pixi/pixi-entity.js ***!
-  \***************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../entity */ "./node_modules/ecs/dist/entity.js");
-/* harmony import */ var _position__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./position */ "./node_modules/ecs/dist/pixi/position.js");
-/* harmony import */ var _displayable__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./displayable */ "./node_modules/ecs/dist/pixi/displayable.js");
-/* harmony import */ var _rotation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./rotation */ "./node_modules/ecs/dist/pixi/rotation.js");
-/* harmony import */ var _size__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./size */ "./node_modules/ecs/dist/pixi/size.js");
-/* harmony import */ var _pivot__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pivot */ "./node_modules/ecs/dist/pixi/pivot.js");
-
-
-
-
-
-
-/**
- * A special entity which automatically adds the components Position,
- * Displayable, Rotation and Size, and has the ability to add an object
- * to a Pixi container.
- */
-class PixiEntity extends _entity__WEBPACK_IMPORTED_MODULE_0__["default"] {
-    /**
-     * Makes this entity a renderable entity added to a pixi container.
-     * The Displayable component should not be mutated in a logic system.
-     * Instead, mutate Position, Rotatin and Size in logic systems and copy the values into the Displayable component in a render system.
-     */
-    addDisplayObject(obj, container) {
-        container.addChild(obj);
-        this.add(new _position__WEBPACK_IMPORTED_MODULE_1__["default"](obj.x, obj.y));
-        this.add(new _displayable__WEBPACK_IMPORTED_MODULE_2__["default"](obj));
-        this.add(new _rotation__WEBPACK_IMPORTED_MODULE_3__["default"](obj.rotation));
-        this.add(new _size__WEBPACK_IMPORTED_MODULE_4__["default"](obj.width, obj.height));
-        this.add(new _pivot__WEBPACK_IMPORTED_MODULE_5__["default"](obj.pivot.x, obj.pivot.y));
-    }
-}
-/* harmony default export */ __webpack_exports__["default"] = (PixiEntity);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/pixi/position.js":
-/*!************************************************!*\
-  !*** ./node_modules/ecs/dist/pixi/position.js ***!
-  \************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * Holds a position with x and y coordinates
- */
-class Position {
-    /**
-     */
-    constructor(x, y) {
-        this.name = "position";
-        this.x = x;
-        this.y = y;
-    }
-}
-/* harmony default export */ __webpack_exports__["default"] = (Position);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/pixi/rotation.js":
-/*!************************************************!*\
-  !*** ./node_modules/ecs/dist/pixi/rotation.js ***!
-  \************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * Holds a rotation (in radians or degrees, that’s up to you)
- */
-class Rotation {
-    /**
-     */
-    constructor(angle = 0) {
-        this.name = "rotation";
-        this.angle = angle;
-    }
-}
-/* harmony default export */ __webpack_exports__["default"] = (Rotation);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/pixi/size.js":
-/*!********************************************!*\
-  !*** ./node_modules/ecs/dist/pixi/size.js ***!
-  \********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * Holds a size in a 2D plane (width and height)
- */
-class Size {
-    /**
-     */
-    constructor(width, height) {
-        this.name = "size";
-        this.width = width;
-        this.height = height;
-    }
-}
-/* harmony default export */ __webpack_exports__["default"] = (Size);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/render-system.js":
-/*!************************************************!*\
-  !*** ./node_modules/ecs/dist/render-system.js ***!
-  \************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/**
- * Initializer for a render system. A render system performs some kind of rendering
- * in your game. Where a logic system may be run N times per game frame, a render
- * system will always be executed exactly once, and always after every logic system.
- * A render system should ideally not calculate stuff, only perform rendering.
- *
- * A render system is passed a `lag` parameter. This parameter tells how "far into"
- * the frame you are. It is a value between 0 (start of frame) and 1 (end of frame).
- * This can be used to compensate for the time your logic systems has spent during
- * a frame.
- * ```
- * const renderSystem = renderSystem(
- *     { renderable: [Renderable] },
- *     (entities: Record<string, Entity[]>, lag: number, world: World) {
- *         entities.renderable.forEach(entity => {
- *             console.log(entity.has(Renderable)); // -> true
- *         })
- *     }
- * )
- * ```
- */
-function renderSystem(filter, tick) {
-    return {
-        filter,
-        tick,
-    };
-}
-/* harmony default export */ __webpack_exports__["default"] = (renderSystem);
-
-
-/***/ }),
-
-/***/ "./node_modules/ecs/dist/world.js":
-/*!****************************************!*\
-  !*** ./node_modules/ecs/dist/world.js ***!
-  \****************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return World; });
-/* harmony import */ var _entity__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./entity */ "./node_modules/ecs/dist/entity.js");
-/* harmony import */ var _keyboard__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./keyboard */ "./node_modules/ecs/dist/keyboard.js");
-/* harmony import */ var _make_entities__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./make-entities */ "./node_modules/ecs/dist/make-entities.js");
-/* harmony import */ var _events_mouse_click__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./events/mouse-click */ "./node_modules/ecs/dist/events/mouse-click.js");
-
-
-
-
-const defaultRenderConfig = {
-    fps: 60,
-    debug: false,
-};
-/**
- * A World ties everything together
- * Usage:
- *
- * ```
- * const pixi = new PIXI.Application({ width: 600, height: 400});
- * const entityList = [list(), full(), of(), entities()]
- * const settings = {
- *     fps: 60,
- *     debug: false
- * }
- * const world = new World(pixi.view, entityList, [myUpdateSystem], [myRenderSystem], settings);
- * world.start()
- * ```
- *
- */
-class World {
-    /**
-     * Main constructor
-     */
-    constructor(canvas, entities, logicSystems, renderSystems, renderConfig = defaultRenderConfig) {
-        this.canvas = canvas;
-        this.context = canvas.getContext("2d");
-        this.mouse = { x: -100, y: -100, pressed: false };
-        this.logicSystems = logicSystems;
-        this.renderSystems = renderSystems;
-        this.entities = new Map();
-        this.keyboard = new _keyboard__WEBPACK_IMPORTED_MODULE_1__["default"]();
-        this.renderState = {
-            fps: renderConfig.fps,
-            previous: 0,
-            frameDuration: 1000 / renderConfig.fps,
-            lag: 0,
-        };
-        this.debug = renderConfig.debug;
-        entities.forEach((entity) => {
-            entity.register(this);
-        });
-        this.createEntityMapping(Object(_make_entities__WEBPACK_IMPORTED_MODULE_2__["makeEntities"])(entities));
-        this.createMouseListener();
-        this.createKeyboardListener();
-    }
-    /**
-     * Adds an entity to an already instantiated world. Updates system filters.
-     */
-    addEntity(entity) {
-        entity.register(this);
-        this.entities.forEach((entities, filter) => {
-            if (matches(entity, filter)) {
-                entities.set(entity.id, entity);
-            }
-        });
-    }
-    /**
-     * Removes an entity from an already instantiated world.
-     */
-    removeEntity(id) {
-        this.entities.forEach((value) => {
-            value.delete(id);
-        });
-    }
-    /**
-     * Starts the game loop. Runs until stopped.
-     */
-    start() {
-        log(this.debug, "Starting rendering", this.renderState);
-        this.tick();
-    }
-    tick(timestamp) {
-        if (!timestamp) {
-            timestamp = 0;
-        }
-        // Calculate time since last frame
-        let elapsed = timestamp - this.renderState.previous;
-        log(this.debug, "Elapsed", elapsed);
-        // Handle case where time since last frame is unreasonably high
-        if (elapsed > 1000) {
-            elapsed = this.renderState.frameDuration;
-        }
-        // Add elapsed time to lag counter
-        this.renderState.lag += elapsed;
-        log(this.debug, "Frame", this.renderState);
-        let count = 0;
-        while (this.renderState.lag >= this.renderState.frameDuration) {
-            count += 1;
-            this.logicSystems.forEach((system) => {
-                const entities = Object.entries(system.filter).reduce((acc, cur) => {
-                    const key = cur[0];
-                    const filters = cur[1];
-                    const entities = Array.from(this.entities.get(filters).values());
-                    acc[key] = entities;
-                    return acc;
-                }, {});
-                return system.tick(entities, this);
-            });
-            this.renderState.lag -= this.renderState.frameDuration;
-        }
-        log(this.debug, "Update ran", count, "times");
-        const lagOffset = this.renderState.lag / this.renderState.frameDuration;
-        this.renderSystems.forEach((system) => {
-            const entities = Object.entries(system.filter).reduce((acc, cur) => {
-                const key = cur[0];
-                const filters = cur[1];
-                const entities = Array.from(this.entities.get(filters).values());
-                acc[key] = entities;
-                return acc;
-            }, {});
-            return system.tick(entities, lagOffset, this);
-        });
-        this.renderState.previous = timestamp;
-        requestAnimationFrame((n) => this.tick(n));
-    }
-    createEntityMapping(entities) {
-        log(this.debug, "Mapping logic systems");
-        this.logicSystems.forEach((system) => {
-            log(this.debug, "Creating mapping for system");
-            Object.entries(system.filter).forEach(([key, filter]) => {
-                log(this.debug, `Mapping for ${key}`);
-                const entityMap = new Map();
-                filterEntities(entities, filter).forEach((entity) => {
-                    entityMap.set(entity.id, entity);
-                });
-                this.entities.set(filter, entityMap);
-            });
-        });
-        log(this.debug, "Mapping render systems");
-        this.renderSystems.forEach((system) => {
-            log(this.debug, "Creating mapping for system");
-            Object.entries(system.filter).forEach(([key, filter]) => {
-                log(this.debug, `Mapping for ${key}`);
-                const entityMap = new Map();
-                filterEntities(entities, filter).forEach((entity) => {
-                    entityMap.set(entity.id, entity);
-                });
-                this.entities.set(filter, entityMap);
-            });
-        });
-    }
-    createMouseListener() {
-        const canvasRect = this.canvas.getBoundingClientRect();
-        this.canvas.addEventListener("mousemove", (ev) => {
-            this.mouse.x = ev.clientX - canvasRect.left;
-            this.mouse.y = ev.clientY - canvasRect.top;
-        });
-        this.canvas.addEventListener("mousedown", () => {
-            this.mouse.pressed = true;
-        });
-        this.canvas.addEventListener("mouseup", () => {
-            this.mouse.pressed = false;
-        });
-        this.canvas.addEventListener("click", () => {
-            const e = new _entity__WEBPACK_IMPORTED_MODULE_0__["default"]();
-            e.add(new _events_mouse_click__WEBPACK_IMPORTED_MODULE_3__["default"](this.mouse.x, this.mouse.y));
-            this.addEntity(e);
-        });
-    }
-    createKeyboardListener() {
-        document.body.addEventListener("keydown", (ev) => {
-            this.keyboard.press(ev.key);
-        });
-        document.body.addEventListener("keyup", (ev) => {
-            this.keyboard.release(ev.key);
-        });
-    }
-}
-function filterEntities(entities, filter) {
-    return Object.values(entities).filter((entity) => matches(entity, filter));
-}
-function matches(entity, filter) {
-    return filter.every((component) => entity.has(component));
-}
-function log(debug, ...msg) {
-    if (debug) {
-        const messages = msg.map((m) => {
-            if (typeof m === "object") {
-                return JSON.stringify(m);
-            }
-            else if (typeof m === "string") {
-                return m;
-            }
-            else {
-                return String(m);
-            }
-        });
-        console.log.call(null, messages);
-    }
-}
-
-
-/***/ }),
-
 /***/ "./node_modules/es6-promise-polyfill/promise.js":
 /*!******************************************************!*\
   !*** ./node_modules/es6-promise-polyfill/promise.js ***!
@@ -44593,6 +44714,31 @@ exports.default = GameScene;
 
 /***/ }),
 
+/***/ "./src/components/polygon.ts":
+/*!***********************************!*\
+  !*** ./src/components/polygon.ts ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
+class Polygon {
+    constructor(points) {
+        this.name = "polygon";
+        this.points = points;
+    }
+    globalPoints(reference) {
+        return this.points.map((v) => vec2d_1.vec2D(v.x + reference.x, v.y + reference.y));
+    }
+}
+exports.default = Polygon;
+
+
+/***/ }),
+
 /***/ "./src/components/scenes.ts":
 /*!**********************************!*\
   !*** ./src/components/scenes.ts ***!
@@ -44651,7 +44797,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const collision_1 = __importDefault(__webpack_require__(/*! ./logic-systems/collision */ "./src/logic-systems/collision.ts"));
 const thrusters_1 = __importDefault(__webpack_require__(/*! ./logic-systems/thrusters */ "./src/logic-systems/thrusters.ts"));
 const physics_1 = __importDefault(__webpack_require__(/*! ./logic-systems/physics */ "./src/logic-systems/physics.ts"));
@@ -44676,7 +44822,7 @@ const scenes = new ecs_1.Entity();
 scenes.add(new scenes_1.default(gameScene, menuScene));
 pixi.stage.addChild(gameScene);
 pixi.stage.addChild(menuScene);
-pixi.stage.addChild(fpsCounter);
+// pixi.stage.addChild(fpsCounter);
 const entities = gameEntities.concat(menuEntities).concat([scenes]);
 const logicSystems = [
     mouse_listener_1.default,
@@ -44689,9 +44835,9 @@ const logicSystems = [
 ];
 const renderConfig = {
     fps: 60,
-    debug: false,
+    debug: true,
 };
-const world = new ecs_1.World(pixi.view, entities, logicSystems, [game_1.default], renderConfig);
+const world = new ecs_1.World(pixi, entities, logicSystems, [game_1.default], renderConfig);
 world.start();
 
 
@@ -44710,7 +44856,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
 const game_scene_1 = __importDefault(__webpack_require__(/*! ../components/game-scene */ "./src/components/game-scene.ts"));
 exports.default = ecs_1.logicSystem({
@@ -44726,8 +44872,8 @@ exports.default = ecs_1.logicSystem({
     const sceneRotation = scene.get(ecs_1.Rotation);
     scenePivot.x = playerPosition.x;
     scenePivot.y = playerPosition.y;
-    scenePosition.x = world.canvas.width / 2;
-    scenePosition.y = world.canvas.height / 2;
+    scenePosition.x = world.pixi.view.width / 2;
+    scenePosition.y = world.pixi.view.height / 2;
     sceneRotation.angle = -playerRotation.angle;
 });
 
@@ -44743,36 +44889,98 @@ exports.default = ecs_1.logicSystem({
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
-const bounding_box_1 = __importDefault(__webpack_require__(/*! ../math/bounding-box */ "./src/math/bounding-box.ts"));
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
-const intersection_1 = __importDefault(__webpack_require__(/*! ../math/intersection */ "./src/math/intersection.ts"));
+const intersection_1 = __importStar(__webpack_require__(/*! ../math/intersection */ "./src/math/intersection.ts"));
 const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
-const scenes_1 = __importDefault(__webpack_require__(/*! ../components/scenes */ "./src/components/scenes.ts"));
 const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
+const polygon_1 = __importDefault(__webpack_require__(/*! ../components/polygon */ "./src/components/polygon.ts"));
+const line_1 = __webpack_require__(/*! ../primitives/line */ "./src/primitives/line.ts");
+const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
+const game_scene_1 = __importDefault(__webpack_require__(/*! ../components/game-scene */ "./src/components/game-scene.ts"));
 exports.default = ecs_1.logicSystem({
-    player: [ecs_1.Position, ecs_1.Size, controlled_1.default],
-    objs: [ecs_1.Position, ecs_1.Size, collidable_1.default],
-    scenes: [scenes_1.default],
+    player: [controlled_1.default, alive_1.default, polygon_1.default, ecs_1.Displayable],
+    objs: [collidable_1.default, polygon_1.default, ecs_1.Displayable],
+    scene: [ecs_1.Position, ecs_1.Pivot, ecs_1.Rotation, game_scene_1.default],
 }, (entities, world) => {
     const player = entities.player[0];
     if (player == null) {
         return;
     }
-    const playerRect = bounding_box_1.default(player.get(ecs_1.Position), player.get(ecs_1.Size));
+    const playerRef = player.get(ecs_1.Displayable).ref;
+    const playerLocation = playerRef.getGlobalPosition();
+    // Need to compentate for pivot
+    playerLocation.x -= playerRef.pivot.x;
+    playerLocation.y -= playerRef.pivot.y;
+    const playerBounds = playerRef.getBounds();
     entities.objs.forEach((obj) => {
-        const objRect = bounding_box_1.default(obj.get(ecs_1.Position), obj.get(ecs_1.Size));
-        if (intersection_1.default(objRect, playerRect)) {
-            player.remove(alive_1.default);
-            const scenes = entities.scenes[0].get(scenes_1.default);
-            scenes.menu.visible = true;
+        const objRef = obj.get(ecs_1.Displayable).ref;
+        const objLocation = objRef.getGlobalPosition();
+        const objBounds = objRef.getBounds();
+        if (intersection_1.default(objBounds, playerBounds) !== intersection_1.Collision.NONE) {
+            const playerPolygon = player.get(polygon_1.default).globalPoints(playerLocation);
+            const objPolygon = obj.get(polygon_1.default).globalPoints(objLocation);
+            const rotatedPlayer = rotatePoints(playerPolygon, playerLocation, 0);
+            const rotatedObj = rotatePoints(objPolygon, objLocation, entities.scene[0].get(ecs_1.Rotation).angle);
+            const playerLines = makeLines(rotatedPlayer);
+            const objLines = makeLines(rotatedObj);
+            const collision = cartesian(objLines, playerLines).some((v) => intersection_1.lineIntersects(v[0], v[1]));
+            if (Math.random() < 0.05) {
+                console.log(collision);
+            }
         }
     });
 });
+const rotatePoints = (points, around, byAngle) => points.map((point) => rotatePoint(point, around, byAngle));
+function rotatePoint(point, around, byAngle) {
+    const xT = point.x - around.x;
+    const yT = point.y - around.y;
+    const xR = xT * Math.cos(byAngle) - yT * Math.sin(byAngle);
+    const yR = xT * Math.sin(byAngle) + yT * Math.cos(byAngle);
+    return vec2d_1.vec2D(xR + around.x, yR + around.y);
+}
+function makeLines(points) {
+    if (points.length === 2) {
+        // There is only one line with two points
+        return [line_1.line(points[0], points[1])];
+    }
+    else {
+        const rotated = rotate(points);
+        return zip(points, rotated).map((v) => line_1.line(v[0], v[1]));
+    }
+}
+function rotate(a) {
+    return [...a.slice(1, a.length), a[0]];
+}
+function zip(a, b) {
+    return a.map((v, i) => [v, b[i]]);
+}
+function cartesian(a, b) {
+    return a.map((t) => b.map((u) => [t, u])).flat();
+}
 
 
 /***/ }),
@@ -44791,7 +44999,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const clickable_1 = __importDefault(__webpack_require__(/*! ../components/clickable */ "./src/components/clickable.ts"));
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const bounding_box_1 = __importDefault(__webpack_require__(/*! ../math/bounding-box */ "./src/math/bounding-box.ts"));
 const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
 const math_1 = __webpack_require__(/*! ../math/math */ "./src/math/math.ts");
@@ -44807,7 +45015,7 @@ exports.default = ecs_1.logicSystem({ mouse: [ecs_1.MouseClick], clickables: [cl
                 fn.onClick(world);
             }
         });
-        world.removeEntity(mouse.id);
+        world.removeEntity(mouse);
     });
 });
 function isVisible(obj) {
@@ -44837,7 +45045,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
 exports.default = ecs_1.logicSystem({ movables: [ecs_1.Position, velocity_1.default, ecs_1.Rotation] }, (entities, world) => {
     entities.movables.forEach((entity) => {
@@ -44848,18 +45056,6 @@ exports.default = ecs_1.logicSystem({ movables: [ecs_1.Position, velocity_1.defa
         rotation.angle -= velocity.right;
         const vx = velocity.forward * Math.cos(rotation.angle - Math.PI / 2);
         const vy = velocity.forward * Math.sin(rotation.angle - Math.PI / 2);
-        // velocity.x += SPEED * Math.cos(rotation.angle - Math.PI / 2);
-        // velocity.y += SPEED * Math.sin(rotation.angle - Math.PI / 2);
-        // if (Math.abs(velocity.x) < 0.01) {
-        //   velocity.x = 0;
-        // } else {
-        //   velocity.x *= DEACCELERATION;
-        // }
-        // if (Math.abs(velocity.y) < 0.01) {
-        //   velocity.y = 0;
-        // } else {
-        //   velocity.y *= DEACCELERATION;
-        // }
         position.x += vx;
         position.y += vy;
     });
@@ -44881,7 +45077,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
 exports.default = ecs_1.logicSystem({ thrusters: [velocity_1.default] }, (entities, world) => {
     entities.thrusters.forEach((thruster) => {
@@ -44928,7 +45124,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const start_game_1 = __importDefault(__webpack_require__(/*! ../components/events/start-game */ "./src/components/events/start-game.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
 const scenes_1 = __importDefault(__webpack_require__(/*! ../components/scenes */ "./src/components/scenes.ts"));
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
 exports.default = ecs_1.logicSystem({
@@ -44937,7 +45133,7 @@ exports.default = ecs_1.logicSystem({
     scenes: [scenes_1.default],
 }, (entities, world) => {
     entities.events.forEach((event) => {
-        world.removeEntity(event.id);
+        world.removeEntity(event);
         entities.players.forEach((player) => {
             const position = player.get(ecs_1.Position);
             const velocity = player.get(velocity_1.default);
@@ -44945,8 +45141,8 @@ exports.default = ecs_1.logicSystem({
             const scenes = entities.scenes[0].get(scenes_1.default);
             velocity.forward = 0;
             player.add(new alive_1.default());
-            position.x = world.canvas.width / 2;
-            position.y = world.canvas.height / 2;
+            position.x = 12.5; //world.canvas.width / 2;
+            position.y = 16; //world.canvas.height / 2;
             rotation.angle = 0;
             scenes.menu.visible = false;
             player.add(new alive_1.default());
@@ -44970,13 +45166,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
 const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "./src/components/alive.ts"));
 exports.default = ecs_1.logicSystem({ players: [controlled_1.default, ecs_1.Rotation, velocity_1.default, alive_1.default] }, (entities, world) => {
     entities.players.forEach((entity) => {
-        const rotation = entity.get(ecs_1.Rotation);
         const velocity = entity.get(velocity_1.default);
         const controls = entity.get(controlled_1.default);
         if (world.keyboard.pressed(controls.left)) {
@@ -45009,8 +45204,8 @@ const SIDE_THRUSTER_SPEED = FULL_CIRCLE / 120;
 Object.defineProperty(exports, "__esModule", { value: true });
 function boundingBox(position, size) {
     return {
-        x1: position.x,
-        y1: position.y,
+        x: position.x,
+        y: position.y,
         x2: position.x + size.width,
         y2: position.y + size.height,
         width: size.width,
@@ -45032,11 +45227,12 @@ exports.default = boundingBox;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Collision = exports.lineIntersects = void 0;
 function intersects(a, b) {
     const w = 0.5 * (a.width + b.width);
     const h = 0.5 * (a.height + b.height);
-    const dx = a.x1 + a.width / 2 - (b.x1 + b.width / 2);
-    const dy = a.y1 + a.height / 2 - (b.y1 + b.height / 2);
+    const dx = a.x + a.width / 2 - (b.x + b.width / 2);
+    const dy = a.y + a.height / 2 - (b.y + b.height / 2);
     if (Math.abs(dx) <= w && Math.abs(dy) <= h) {
         const wy = w * dy;
         const hx = h * dx;
@@ -45058,17 +45254,37 @@ function intersects(a, b) {
         }
     }
     else {
-        return undefined;
+        return Collision.NONE;
     }
 }
 exports.default = intersects;
+function lineIntersects(l1, l2) {
+    const dx = l1.to.x - l1.from.x;
+    const dy = l1.to.y - l1.from.y;
+    const determinant = dx * (l2.to.y - l2.from.y) - (l2.to.x - l2.from.x) * dy;
+    // parallel lines
+    if (determinant === 0) {
+        return false;
+    }
+    else {
+        const lambda = ((l2.to.y - l2.from.y) * (l2.to.x - l1.from.x) +
+            (l2.from.x - l2.to.x) * (l2.to.y - l1.from.y)) /
+            determinant;
+        const gamma = ((l1.from.y - l1.to.y) * (l2.to.x - l1.from.x) +
+            dx * (l2.to.y - l1.from.y)) /
+            determinant;
+        return 0 <= lambda && lambda <= 1 && 0 <= gamma && gamma <= 1;
+    }
+}
+exports.lineIntersects = lineIntersects;
 var Collision;
 (function (Collision) {
-    Collision[Collision["TOP"] = 0] = "TOP";
-    Collision[Collision["BOTTOM"] = 1] = "BOTTOM";
-    Collision[Collision["LEFT"] = 2] = "LEFT";
-    Collision[Collision["RIGHT"] = 3] = "RIGHT";
-})(Collision || (Collision = {}));
+    Collision["TOP"] = "TOP";
+    Collision["BOTTOM"] = "BOTTOM";
+    Collision["LEFT"] = "LEFT";
+    Collision["RIGHT"] = "RIGHT";
+    Collision["NONE"] = "NONE";
+})(Collision = exports.Collision || (exports.Collision = {}));
 
 
 /***/ }),
@@ -45083,14 +45299,22 @@ var Collision;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.containsPoint = void 0;
+exports.cartesianProduct = exports.containsPoint = void 0;
 function containsPoint(rect, point) {
-    return (point.x >= rect.x1 &&
+    return (point.x >= rect.x &&
         point.x <= rect.x2 &&
-        point.y >= rect.y1 &&
+        point.y >= rect.y &&
         point.y <= rect.y2);
 }
 exports.containsPoint = containsPoint;
+function cartesianProduct(a, b) {
+    const ts = [];
+    a.forEach((v1) => {
+        b.forEach((v2) => ts.push([v1, v2]));
+    });
+    return ts;
+}
+exports.cartesianProduct = cartesianProduct;
 
 
 /***/ }),
@@ -45125,6 +45349,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+window.PIXI = PIXI;
 function pixiApplication() {
     const pixi = new PIXI.Application({
         width: window.innerWidth,
@@ -45174,32 +45399,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.wall = exports.player = void 0;
 const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
 const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
 const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
 const game_scene_1 = __importDefault(__webpack_require__(/*! ../components/game-scene */ "./src/components/game-scene.ts"));
+const polygon_1 = __importDefault(__webpack_require__(/*! ../components/polygon */ "./src/components/polygon.ts"));
+const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
 function initializeGameScene(stage) {
     const scene = new PIXI.Container();
-    scene.width = stage.width;
-    scene.height = stage.height;
+    scene.name = "game-scene";
+    // scene.width = stage.width;
+    // scene.height = stage.height;
     const sceneEntity = new ecs_1.PixiEntity();
     sceneEntity.addDisplayObject(scene, stage);
     sceneEntity.add(new game_scene_1.default());
     const entities = [
         sceneEntity,
         player(window.innerWidth / 2, window.innerHeight / 2, scene),
-        wall((window.innerWidth / 3) * 2, (window.innerHeight / 3) * 2, scene),
-        wall(300, -100, scene),
+        // player(12.5, 16, scene),
+        // wall((window.innerWidth / 3) * 2, (window.innerHeight / 3) * 2, scene),
+        wall(100, 100, scene),
     ];
     return [scene, entities];
 }
 exports.default = initializeGameScene;
 function player(x, y, stage) {
-    const path = [0, 32, 12.5, 0, 25, 32, 12.5, 25];
+    const points = [vec2d_1.vec2D(0, 32), vec2d_1.vec2D(12.5, 0), vec2d_1.vec2D(25, 32), vec2d_1.vec2D(12.5, 25)];
+    const path = points.map((p) => [p.x, p.y]).flat();
     const g = new PIXI.Graphics();
-    g.pivot.set(16, 12.5);
-    g.lineStyle(3, 0xcecece, 1);
+    g.name = "player";
+    g.pivot.set(12.5, 16);
+    g.lineStyle(3, 0xcecece, 1, 0);
     g.drawPolygon(path);
     g.x = x;
     g.y = y;
@@ -45207,12 +45438,15 @@ function player(x, y, stage) {
     player.addDisplayObject(g, stage);
     player.add(new controlled_1.default(ecs_1.Key.Up, ecs_1.Key.Left, ecs_1.Key.Right));
     player.add(new velocity_1.default(0));
+    player.add(new polygon_1.default(points));
     return player;
 }
 exports.player = player;
 function wall(x, y, stage) {
-    const path = [0, 0, 0, 100];
+    const points = [vec2d_1.vec2D(0, 0), vec2d_1.vec2D(0, 100)];
+    const path = points.map((p) => [p.x, p.y]).flat();
     const g = new PIXI.Graphics();
+    g.name = "wall";
     g.lineStyle(3, 0xcecece, 1);
     g.drawPolygon(path);
     g.x = x;
@@ -45220,6 +45454,7 @@ function wall(x, y, stage) {
     const wall = new ecs_1.PixiEntity();
     wall.addDisplayObject(g, stage);
     wall.add(new collidable_1.default());
+    wall.add(new polygon_1.default(points));
     return wall;
 }
 exports.wall = wall;
@@ -45260,7 +45495,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 const start_game_1 = __importDefault(__webpack_require__(/*! ../components/events/start-game */ "./src/components/events/start-game.ts"));
 const clickable_1 = __importDefault(__webpack_require__(/*! ../components/clickable */ "./src/components/clickable.ts"));
 function initializeMenuScene(stage) {
@@ -45271,6 +45506,7 @@ function initializeMenuScene(stage) {
 exports.default = initializeMenuScene;
 function background(stage) {
     const g = new PIXI.Graphics();
+    g.name = "menu-background";
     g.beginFill(0x000000, 0.8);
     g.drawRect(0, 0, window.innerWidth, window.innerHeight);
     g.endFill();
@@ -45278,32 +45514,52 @@ function background(stage) {
     entity.addDisplayObject(g, stage);
     return entity;
 }
-function button(stage) {
+function button(scene) {
     const width = 100;
     const height = 30;
+    const x = scene.width / 2 - width / 2;
+    const y = scene.height / 2 - height / 2;
     const clickable = new clickable_1.default((world) => {
         const e = new ecs_1.Entity();
         e.add(new start_game_1.default());
         world.addEntity(e);
     });
-    const button = new PIXI.Container();
-    button.interactive = true;
-    const background = new PIXI.Graphics();
-    background.beginFill(0x000000);
-    background.drawRect(0, 0, width, height);
-    background.endFill();
-    button.addChild(background);
-    const border = new PIXI.Graphics();
-    border.lineStyle(2, 0xffffff, 0.9, 0);
-    border.drawRect(1, 1, width - 2, height - 2);
-    button.addChild(border);
+    const button = new PIXI.Graphics();
+    button.x = x;
+    button.y = y;
+    button.interactive;
+    button.name = "button-background";
+    button.beginFill(0x000000);
+    button.drawRect(0, 0, width, height);
+    button.endFill();
+    button.lineStyle(2, 0xffffff, 0.9, 0);
+    button.drawRect(1, 1, width - 2, height - 2);
     const text = new PIXI.Text("Start", { fontFamily: "Arial", fill: 0xffffff });
     button.addChild(text);
     const entity = new ecs_1.PixiEntity();
     entity.add(clickable);
-    entity.addDisplayObject(button, stage);
+    entity.addDisplayObject(button, scene);
     return entity;
 }
+
+
+/***/ }),
+
+/***/ "./src/primitives/line.ts":
+/*!********************************!*\
+  !*** ./src/primitives/line.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.line = void 0;
+function line(from, to) {
+    return { from, to };
+}
+exports.line = line;
 
 
 /***/ }),
@@ -45340,7 +45596,7 @@ exports.vec2D = vec2D;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecs_1 = __webpack_require__(/*! ecs */ "./node_modules/ecs/dist/index.js");
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
 exports.default = ecs_1.renderSystem({ displayables: [ecs_1.Displayable] }, (entities, lag, world) => {
     entities.displayables.forEach((entity) => {
         const { ref } = entity.get(ecs_1.Displayable);
