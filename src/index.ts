@@ -9,6 +9,7 @@ import initializeMenuScene from "./pixi/menu-scene";
 import renderGame from "./render-systems/game";
 import mouseListener from "./logic-systems/mouse-listener";
 import startGame from "./logic-systems/start-game";
+import endGame from "./logic-systems/end-game";
 import Scenes from "./components/scenes";
 import PixiFps from "pixi-fps";
 import camera from "./logic-systems/camera";
@@ -35,6 +36,7 @@ const entities = gameEntities.concat(menuEntities).concat([scenes]);
 const logicSystems = [
   mouseListener,
   startGame,
+  endGame,
   thrusters,
   physics,
   collision,

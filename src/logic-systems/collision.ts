@@ -21,6 +21,7 @@ import Polygon from "../components/polygon";
 import { line, Line } from "../primitives/line";
 import { Vec2D, vec2D } from "../primitives/vec2d";
 import GameScene from "../components/game-scene";
+import EndGame from "../components/events/end-game";
 
 export default logicSystem(
   {
@@ -60,8 +61,11 @@ export default logicSystem(
         const collision = cartesian(objLines, playerLines).some((v) =>
           lineIntersects(v[0], v[1])
         );
-        if (Math.random() < 0.05) {
-          console.log(collision);
+
+        if (collision) {
+          const entity = new Entity();
+          entity.add(new EndGame());
+          world.addEntity(entity);
         }
       }
     });
