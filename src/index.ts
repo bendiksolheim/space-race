@@ -43,7 +43,7 @@ const logicSystems = [
 ];
 const renderConfig = {
   fps: 60,
-  debug: true,
+  debug: DEBUG,
 };
 
 const world = new World(

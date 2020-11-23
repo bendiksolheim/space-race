@@ -1,4 +1,7 @@
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+const debug = process.env.DEBUG === "true";
 
 module.exports = {
   entry: "./src/index.ts",
@@ -8,7 +11,7 @@ module.exports = {
   devtool: "source-map",
 
   resolve: {
-    extensions: [".ts", ".js"]
+    extensions: [".ts", ".js"],
   },
 
   module: {
@@ -16,19 +19,24 @@ module.exports = {
       {
         test: /\.ts$/,
         exclude: /node_modules/,
-        use: "ts-loader"
+        use: "ts-loader",
       },
       {
         enforce: "pre",
         test: /\.js$/,
-        loader: "source-map-loader"
-      }
-    ]
+        loader: "source-map-loader",
+      },
+    ],
   },
 
-  plugins: [new HtmlWebpackPlugin()],
+  plugins: [
+    new HtmlWebpackPlugin(),
+    new webpack.DefinePlugin({
+      DEBUG: debug,
+    }),
+  ],
 
   devServer: {
-    port: 3000
-  }
+    port: 3000,
+  },
 };
