@@ -1,6 +1,8 @@
 import * as PIXI from "pixi.js";
 
-window.PIXI = PIXI;
+if (DEBUG) {
+  window.PIXI = PIXI;
+}
 
 export default function pixiApplication(): PIXI.Application {
   const pixi = new PIXI.Application({
