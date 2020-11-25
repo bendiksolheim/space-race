@@ -817,6 +817,7 @@ class World {
         this.renderSystems = renderSystems;
         this.entities = new Map();
         this.keyboard = new _keyboard__WEBPACK_IMPORTED_MODULE_2__["default"]();
+        this.elapsedTime = 0;
         this.renderState = {
             fps: renderConfig.fps,
             previous: 0,
@@ -853,6 +854,7 @@ class World {
      * Starts the game loop. Runs until stopped.
      */
     start() {
+        this.elapsedTime = performance.now();
         log(this.debug, "Starting rendering", this.renderState);
         this.tick();
     }
@@ -896,6 +898,12 @@ class World {
         });
         this.renderState.previous = timestamp;
         requestAnimationFrame((n) => this.tick(n));
+    }
+    /**
+     * Gets time elapsed since engine was started
+     */
+    currentElapsedTime() {
+        return performance.now() - this.elapsedTime;
     }
     createEntityMapping(entities) {
         log(this.debug, "Mapping logic systems");
@@ -44589,6 +44597,52 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "./src/app.ts":
+/*!********************!*\
+  !*** ./src/app.ts ***!
+  \********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+if (false) {}
+function pixiApplication() {
+    const pixi = new PIXI.Application({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        resolution: 1,
+        antialias: false,
+    });
+    pixi.view.style.display = "block";
+    return pixi;
+}
+exports.default = pixiApplication;
+
+
+/***/ }),
+
 /***/ "./src/components/alive.ts":
 /*!*********************************!*\
   !*** ./src/components/alive.ts ***!
@@ -44600,8 +44654,10 @@ module.exports = function(module) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 class Alive {
-    constructor() {
+    constructor(time) {
         this.name = "alive";
+        this.time = 0;
+        this.time = time;
     }
 }
 exports.default = Alive;
@@ -44821,9 +44877,9 @@ const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@ben
 const collision_1 = __importDefault(__webpack_require__(/*! ./logic-systems/collision */ "./src/logic-systems/collision.ts"));
 const thrusters_1 = __importDefault(__webpack_require__(/*! ./logic-systems/thrusters */ "./src/logic-systems/thrusters.ts"));
 const physics_1 = __importDefault(__webpack_require__(/*! ./logic-systems/physics */ "./src/logic-systems/physics.ts"));
-const app_1 = __importDefault(__webpack_require__(/*! ./pixi/app */ "./src/pixi/app.ts"));
-const game_scene_1 = __importDefault(__webpack_require__(/*! ./pixi/game-scene */ "./src/pixi/game-scene.ts"));
-const menu_scene_1 = __importDefault(__webpack_require__(/*! ./pixi/menu-scene */ "./src/pixi/menu-scene.ts"));
+const app_1 = __importDefault(__webpack_require__(/*! ./app */ "./src/app.ts"));
+const game_scene_1 = __importDefault(__webpack_require__(/*! ./scenes/game-scene */ "./src/scenes/game-scene.ts"));
+const menu_scene_1 = __importDefault(__webpack_require__(/*! ./scenes/menu-scene */ "./src/scenes/menu-scene.ts"));
 const game_1 = __importDefault(__webpack_require__(/*! ./render-systems/game */ "./src/render-systems/game.ts"));
 const mouse_listener_1 = __importDefault(__webpack_require__(/*! ./logic-systems/mouse-listener */ "./src/logic-systems/mouse-listener.ts"));
 const start_game_1 = __importDefault(__webpack_require__(/*! ./logic-systems/start-game */ "./src/logic-systems/start-game.ts"));
@@ -45028,14 +45084,17 @@ const alive_1 = __importDefault(__webpack_require__(/*! ../components/alive */ "
 const end_game_1 = __importDefault(__webpack_require__(/*! ../components/events/end-game */ "./src/components/events/end-game.ts"));
 const scenes_1 = __importDefault(__webpack_require__(/*! ../components/scenes */ "./src/components/scenes.ts"));
 exports.default = ecs_1.logicSystem({
-    players: [alive_1.default],
+    player: [alive_1.default],
     events: [end_game_1.default],
     scenes: [scenes_1.default],
 }, (entities, world) => {
     entities.events.forEach((event) => {
+        const player = entities.player[0];
         const scenes = entities.scenes[0].get(scenes_1.default);
         world.removeEntity(event);
-        entities.players.forEach((player) => player.remove(alive_1.default));
+        const alive = player.get(alive_1.default);
+        console.log(world.currentElapsedTime() - alive.time);
+        player.remove(alive_1.default);
         scenes.menu.visible = true;
     });
 });
@@ -45198,11 +45257,11 @@ exports.default = ecs_1.logicSystem({
             const rotation = player.get(ecs_1.Rotation);
             const scenes = entities.scenes[0].get(scenes_1.default);
             velocity.forward = 0;
-            position.x = 12.5; //world.canvas.width / 2;
-            position.y = 16; //world.canvas.height / 2;
             rotation.angle = 0;
+            position.x = 0;
+            position.y = 0;
             scenes.menu.visible = false;
-            player.add(new alive_1.default());
+            player.add(new alive_1.default(world.currentElapsedTime()));
         });
     });
 });
@@ -45376,228 +45435,26 @@ exports.cartesianProduct = cartesianProduct;
 
 /***/ }),
 
-/***/ "./src/pixi/app.ts":
-/*!*************************!*\
-  !*** ./src/pixi/app.ts ***!
-  \*************************/
+/***/ "./src/math/translate.ts":
+/*!*******************************!*\
+  !*** ./src/math/translate.ts ***!
+  \*******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
-window.PIXI = PIXI;
-function pixiApplication() {
-    const pixi = new PIXI.Application({
-        width: window.innerWidth,
-        height: window.innerHeight,
-        resolution: 1,
-        antialias: false,
-    });
-    pixi.view.style.display = "block";
-    return pixi;
-}
-exports.default = pixiApplication;
-
-
-/***/ }),
-
-/***/ "./src/pixi/game-scene.ts":
-/*!********************************!*\
-  !*** ./src/pixi/game-scene.ts ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.wall = exports.player = void 0;
-const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
-const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
-const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
-const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
-const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
-const game_scene_1 = __importDefault(__webpack_require__(/*! ../components/game-scene */ "./src/components/game-scene.ts"));
-const polygon_1 = __importDefault(__webpack_require__(/*! ../components/polygon */ "./src/components/polygon.ts"));
+const line_1 = __webpack_require__(/*! ../primitives/line */ "./src/primitives/line.ts");
 const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
-function initializeGameScene(stage) {
-    const scene = new PIXI.Container();
-    scene.name = "game-scene";
-    // scene.width = stage.width;
-    // scene.height = stage.height;
-    const sceneEntity = new ecs_1.PixiEntity();
-    sceneEntity.addDisplayObject(scene, stage);
-    sceneEntity.add(new game_scene_1.default());
-    const entities = [
-        sceneEntity,
-        player(window.innerWidth / 2, window.innerHeight / 2, scene),
-        // player(12.5, 16, scene),
-        // wall((window.innerWidth / 3) * 2, (window.innerHeight / 3) * 2, scene),
-        wall(100, 100, scene),
-    ];
-    return [scene, entities];
+function translate(aLine, toPoint) {
+    const xDiff = toPoint.x - aLine.from.x;
+    const yDiff = toPoint.y - aLine.from.y;
+    const from = vec2d_1.vec2D(0, 0);
+    const to = vec2d_1.vec2D(aLine.to.x + xDiff, aLine.to.y + yDiff);
+    return line_1.line(from, to);
 }
-exports.default = initializeGameScene;
-function player(x, y, stage) {
-    const points = [vec2d_1.vec2D(0, 32), vec2d_1.vec2D(12.5, 0), vec2d_1.vec2D(25, 32), vec2d_1.vec2D(12.5, 25)];
-    const path = points.map((p) => [p.x, p.y]).flat();
-    const g = new PIXI.Graphics();
-    g.name = "player";
-    g.pivot.set(12.5, 16);
-    g.lineStyle(3, 0xcecece, 1, 0);
-    g.drawPolygon(path);
-    g.x = x;
-    g.y = y;
-    const player = new ecs_1.PixiEntity();
-    player.addDisplayObject(g, stage);
-    player.add(new controlled_1.default(ecs_1.Key.Up, ecs_1.Key.Left, ecs_1.Key.Right));
-    player.add(new velocity_1.default(0));
-    player.add(new polygon_1.default(points));
-    return player;
-}
-exports.player = player;
-function wall(x, y, stage) {
-    const points = [vec2d_1.vec2D(0, 0), vec2d_1.vec2D(0, 100)];
-    const path = points.map((p) => [p.x, p.y]).flat();
-    const g = new PIXI.Graphics();
-    g.name = "wall";
-    g.lineStyle(3, 0xcecece, 1);
-    g.drawPolygon(path);
-    g.x = x;
-    g.y = y;
-    const wall = new ecs_1.PixiEntity();
-    wall.addDisplayObject(g, stage);
-    wall.add(new collidable_1.default());
-    wall.add(new polygon_1.default(points));
-    return wall;
-}
-exports.wall = wall;
-
-
-/***/ }),
-
-/***/ "./src/pixi/menu-scene.ts":
-/*!********************************!*\
-  !*** ./src/pixi/menu-scene.ts ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
-const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
-const start_game_1 = __importDefault(__webpack_require__(/*! ../components/events/start-game */ "./src/components/events/start-game.ts"));
-const clickable_1 = __importDefault(__webpack_require__(/*! ../components/clickable */ "./src/components/clickable.ts"));
-function initializeMenuScene(stage) {
-    const scene = new PIXI.Container();
-    const entities = [background(scene), button(scene)];
-    return [scene, entities];
-}
-exports.default = initializeMenuScene;
-function background(stage) {
-    const g = new PIXI.Graphics();
-    g.name = "menu-background";
-    g.beginFill(0x000000, 0.8);
-    g.drawRect(0, 0, window.innerWidth, window.innerHeight);
-    g.endFill();
-    const entity = new ecs_1.PixiEntity();
-    entity.addDisplayObject(g, stage);
-    return entity;
-}
-function button(scene) {
-    const width = 100;
-    const height = 30;
-    const x = scene.width / 2 - width / 2;
-    const y = scene.height / 2 - height / 2;
-    const clickable = new clickable_1.default((world) => {
-        const e = new ecs_1.Entity();
-        e.add(new start_game_1.default());
-        world.addEntity(e);
-    });
-    const button = new PIXI.Graphics();
-    button.x = x;
-    button.y = y;
-    button.interactive;
-    button.name = "button-background";
-    button.beginFill(0x000000);
-    button.drawRect(0, 0, width, height);
-    button.endFill();
-    button.lineStyle(2, 0xffffff, 0.9, 0);
-    button.drawRect(1, 1, width - 2, height - 2);
-    const text = new PIXI.Text("Start", { fontFamily: "Arial", fill: 0xffffff });
-    button.addChild(text);
-    const entity = new ecs_1.PixiEntity();
-    entity.add(clickable);
-    entity.addDisplayObject(button, scene);
-    return entity;
-}
+exports.default = translate;
 
 
 /***/ }),
@@ -45670,6 +45527,226 @@ exports.default = ecs_1.renderSystem({ displayables: [ecs_1.Displayable] }, (ent
         });
     });
 });
+
+
+/***/ }),
+
+/***/ "./src/scenes/game-scene.ts":
+/*!**********************************!*\
+  !*** ./src/scenes/game-scene.ts ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.wall = exports.player = void 0;
+const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
+const collidable_1 = __importDefault(__webpack_require__(/*! ../components/collidable */ "./src/components/collidable.ts"));
+const controlled_1 = __importDefault(__webpack_require__(/*! ../components/controlled */ "./src/components/controlled.ts"));
+const velocity_1 = __importDefault(__webpack_require__(/*! ../components/velocity */ "./src/components/velocity.ts"));
+const game_scene_1 = __importDefault(__webpack_require__(/*! ../components/game-scene */ "./src/components/game-scene.ts"));
+const polygon_1 = __importDefault(__webpack_require__(/*! ../components/polygon */ "./src/components/polygon.ts"));
+const vec2d_1 = __webpack_require__(/*! ../primitives/vec2d */ "./src/primitives/vec2d.ts");
+const line_1 = __webpack_require__(/*! ../primitives/line */ "./src/primitives/line.ts");
+const translate_1 = __importDefault(__webpack_require__(/*! ../math/translate */ "./src/math/translate.ts"));
+const walls = [
+    line_1.line(vec2d_1.vec2D(-100, 50), vec2d_1.vec2D(-100, -50)),
+    line_1.line(vec2d_1.vec2D(-100, -50), vec2d_1.vec2D(-50, -100)),
+    line_1.line(vec2d_1.vec2D(-50, -100), vec2d_1.vec2D(50, -100)),
+    line_1.line(vec2d_1.vec2D(50, -100), vec2d_1.vec2D(100, -50)),
+    line_1.line(vec2d_1.vec2D(100, -50), vec2d_1.vec2D(100, 50)),
+];
+function initializeGameScene(stage) {
+    const scene = new PIXI.Container();
+    scene.name = "game-scene";
+    // scene.width = stage.width;
+    // scene.height = stage.height;
+    const sceneEntity = new ecs_1.PixiEntity();
+    sceneEntity.addDisplayObject(scene, stage);
+    sceneEntity.add(new game_scene_1.default());
+    const entities = [
+        sceneEntity,
+        player(0, 0, scene),
+        xAxis(scene),
+        yAxis(scene),
+    ].concat(walls.map((w) => wall(w, scene)));
+    return [scene, entities];
+}
+exports.default = initializeGameScene;
+function player(x, y, stage) {
+    const points = [vec2d_1.vec2D(0, 32), vec2d_1.vec2D(12.5, 0), vec2d_1.vec2D(25, 32), vec2d_1.vec2D(12.5, 25)];
+    const path = points.map((p) => [p.x, p.y]).flat();
+    const g = new PIXI.Graphics();
+    g.name = "player";
+    g.pivot.set(12.5, 16);
+    g.lineStyle(3, 0xcecece, 1, 0);
+    g.drawPolygon(path);
+    g.x = x;
+    g.y = y;
+    const player = new ecs_1.PixiEntity();
+    player.addDisplayObject(g, stage);
+    player.add(new controlled_1.default(ecs_1.Key.Up, ecs_1.Key.Left, ecs_1.Key.Right));
+    player.add(new velocity_1.default(0));
+    player.add(new polygon_1.default(points));
+    return player;
+}
+exports.player = player;
+function wall(line, stage) {
+    const localLine = translate_1.default(line, vec2d_1.vec2D(0, 0));
+    // We invert the y axis to get make positive Y upwards
+    const points = [localLine.from, localLine.to].map((p) => vec2d_1.vec2D(p.x, -p.y));
+    const path = points.map((p) => [p.x, p.y]).flat();
+    const g = new PIXI.Graphics();
+    g.name = "wall";
+    g.lineStyle(3, 0xcecece, 1);
+    g.drawPolygon(path);
+    g.x = line.from.x;
+    // We invert the y axis to get make positive Y upwards
+    g.y = line.from.y * -1;
+    const wall = new ecs_1.PixiEntity();
+    wall.addDisplayObject(g, stage);
+    wall.add(new collidable_1.default());
+    wall.add(new polygon_1.default(points));
+    return wall;
+}
+exports.wall = wall;
+function xAxis(stage) {
+    const from = vec2d_1.vec2D(0, 0);
+    const to = vec2d_1.vec2D(1000, 0);
+    const points = [from, to];
+    const path = points.map((p) => [p.x, p.y]).flat();
+    const g = new PIXI.Graphics();
+    g.name = "axis";
+    g.lineStyle(1, 0xff0000, 0.5);
+    g.drawPolygon(path);
+    g.x = -500;
+    g.y = 0;
+    const axis = new ecs_1.PixiEntity();
+    axis.addDisplayObject(g, stage);
+    return axis;
+}
+function yAxis(stage) {
+    const from = vec2d_1.vec2D(0, 0);
+    const to = vec2d_1.vec2D(0, 1000);
+    const points = [from, to];
+    const path = points.map((p) => [p.x, p.y]).flat();
+    const g = new PIXI.Graphics();
+    g.name = "axis";
+    g.lineStyle(1, 0xff0000, 0.5);
+    g.drawPolygon(path);
+    g.x = 0;
+    g.y = -500;
+    const axis = new ecs_1.PixiEntity();
+    axis.addDisplayObject(g, stage);
+    return axis;
+}
+
+
+/***/ }),
+
+/***/ "./src/scenes/menu-scene.ts":
+/*!**********************************!*\
+  !*** ./src/scenes/menu-scene.ts ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const PIXI = __importStar(__webpack_require__(/*! pixi.js */ "./node_modules/pixi.js/lib/pixi.es.js"));
+const ecs_1 = __webpack_require__(/*! @bendiksolheim/ecs */ "./node_modules/@bendiksolheim/ecs/dist/index.js");
+const start_game_1 = __importDefault(__webpack_require__(/*! ../components/events/start-game */ "./src/components/events/start-game.ts"));
+const clickable_1 = __importDefault(__webpack_require__(/*! ../components/clickable */ "./src/components/clickable.ts"));
+function initializeMenuScene(stage) {
+    const scene = new PIXI.Container();
+    const entities = [background(scene), button(scene)];
+    return [scene, entities];
+}
+exports.default = initializeMenuScene;
+function background(stage) {
+    const g = new PIXI.Graphics();
+    g.name = "menu-background";
+    g.beginFill(0x000000, 0.8);
+    g.drawRect(0, 0, window.innerWidth, window.innerHeight);
+    g.endFill();
+    const entity = new ecs_1.PixiEntity();
+    entity.addDisplayObject(g, stage);
+    return entity;
+}
+function button(scene) {
+    const width = 100;
+    const height = 30;
+    const x = scene.width / 2 - width / 2;
+    const y = scene.height / 2 - height / 2;
+    const clickable = new clickable_1.default((world) => {
+        const e = new ecs_1.Entity();
+        e.add(new start_game_1.default());
+        world.addEntity(e);
+    });
+    const button = new PIXI.Graphics();
+    button.x = x;
+    button.y = y;
+    button.name = "button-background";
+    button.beginFill(0x000000);
+    button.drawRect(0, 0, width, height);
+    button.endFill();
+    button.lineStyle(2, 0xffffff, 0.9, 0);
+    button.drawRect(1, 1, width - 2, height - 2);
+    const text = new PIXI.Text("Start", { fontFamily: "Arial", fill: 0xffffff });
+    button.addChild(text);
+    const entity = new ecs_1.PixiEntity();
+    entity.add(clickable);
+    entity.addDisplayObject(button, scene);
+    return entity;
+}
 
 
 /***/ })
