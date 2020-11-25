@@ -40,7 +40,6 @@ function button(scene: PIXI.Container): Entity {
   const button = new PIXI.Graphics();
   button.x = x;
   button.y = y;
-  button.interactive;
   button.name = "button-background";
   button.beginFill(0x000000);
   button.drawRect(0, 0, width, height);
