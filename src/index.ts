@@ -3,9 +3,9 @@ import collision from "./logic-systems/collision";
 
 import thrusters from "./logic-systems/thrusters";
 import physics from "./logic-systems/physics";
-import pixiApplication from "./pixi/app";
-import initializeGameScene from "./pixi/game-scene";
-import initializeMenuScene from "./pixi/menu-scene";
+import pixiApplication from "./app";
+import initializeGameScene from "./scenes/game-scene";
+import initializeMenuScene from "./scenes/menu-scene";
 import renderGame from "./render-systems/game";
 import mouseListener from "./logic-systems/mouse-listener";
 import startGame from "./logic-systems/start-game";
