@@ -25,7 +25,7 @@ export default logicSystem(
         position.y = 16; //world.canvas.height / 2;
         rotation.angle = 0;
         scenes.menu.visible = false;
-        player.add(new Alive());
+        player.add(new Alive(world.currentElapsedTime()));
       });
     });
   }
